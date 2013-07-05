@@ -1,0 +1,34 @@
+
+Syntax
+======
+
+[private] ns foo; ...
+
+[private] ns foo { ... }
+
+[private] identifier :: type = ...;
+
+[private] identifier :: type { ... }
+
+private { ... }
+
+[private] identifier(pname :: ptype, ...) :: type {
+  ...
+}
+
+template(identifier) // built-in that returns str
+
+
+Interpolation
+-------------
+
+$onepart
+
+${multi.part}
+
+
+Types
+-----
+
+str, int, float, bool, rec, file, pkg, svc, set
+
