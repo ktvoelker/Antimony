@@ -2,17 +2,17 @@
 Syntax
 ======
 
-[private] ns foo; ...
+[public] ns foo; ...
 
-[private] ns foo { ... }
+[public] ns foo { ... }
 
-[private] identifier :: type = ...;
+[public] identifier :: type = ...;
 
-[private] identifier :: type { ... }
+[public] identifier :: type { ... }
 
-private { ... }
+public { ... }
 
-[private] identifier(pname :: ptype, ...) :: type {
+[public] identifier(pname :: ptype, ...) :: type {
   ...
 }
 

@@ -14,9 +14,8 @@ instance IdClass AIdClass where
 
 type AToken = Token AIdClass
 
--- TODO
 lexPhase :: [InputFile] -> M [(AToken, SourcePos)]
-lexPhase = stage ALex . \((InputFile name xs) : _) -> tokenize aLexerSpec name xs
+lexPhase = stage ALex . tokenize aLexerSpec
 
 idPrefixChars = '_' : ['a' .. 'z'] ++ ['A' .. 'Z']
 
@@ -25,13 +24,13 @@ idChars = idPrefixChars ++ ['0' .. '9']
 aLexerSpec :: LexerSpec AIdClass
 aLexerSpec =
   LexerSpec
-  { sKeywords    = undefined
+  { sKeywords    = ["ns", "public", ",", ";", "::", "{", "}", "(", ")"]
   , sIdentifiers = [(AIdClass, idPrefixChars, idChars)]
   , sStrings
     = StringSpec
     { sStringDelim = Just '"'
     , sCharDelim = Just '\''
-    , sInterpolate = undefined
+    , sInterpolate = Just ("{", "}")
     }
   , sInts = True
   , sNegative = Just "-"
@@ -43,21 +42,4 @@ aLexerSpec =
     , sBlockComment = Just ("/*", "*/", True)
     }
   }
-
-{-
-    TokNs
-  | TokPriv
-  | TokSep
-  | TokEnd
-  | TokType
-  | TokLB
-  | TokRB
-  | TokLP
-  | TokRP
-  | TokId
-  | TokQual
-  | TokStr
-  | TokInt
-  | TokBool
--}
 
