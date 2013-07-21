@@ -2,6 +2,7 @@
 TODO
 ====
 
-There's too much work being repeated. Make a library using some of the parser stuff
-from FLang.
+Write the lexer
+
+Write the parser
 

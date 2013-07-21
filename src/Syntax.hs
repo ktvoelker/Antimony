@@ -1,6 +1,7 @@
 
-module Syntax.Types where
+module Syntax where
 
+import H.Common
 import qualified Data.Map as M
 import qualified Data.Text as T
 
@@ -21,14 +22,14 @@ data Type =
   | TNs
   deriving (Show)
 
-data Prim = PStr Text | PInt Integer | PBool Bool deriving (Show)
+data Prim = PStr T.Text | PInt Integer | PBool Bool deriving (Show)
 
 data Expr =
-    EPrim Primitive Expr
-  | ERes  (M.Map AttrName Expr)
-  | EFun  [Id] Expr -> Expr
-  | ENs   (M.Map Id (Type, Expr)) Expr
-  | ERef  Qual Expr
-  | EApp  Expr [Expr] -> Expr
+    EPrim Prim
+  | ERes  (M.Map Attr Expr)
+  | EFun  [Id] Expr
+  | ENs   (M.Map Id (Type, Expr))
+  | ERef  Qual
+  | EApp  Expr [Expr]
   deriving (Show)
 

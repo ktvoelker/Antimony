@@ -1,8 +1,28 @@
 
 module Main where
 
-import Lexer ()
-import Parser ()
+import H.Common
+import H.Phase
 
-main = undefined
+import Lexer
+import Monad
+import Parser
 
+phases :: [InputFile] -> M ()
+phases =
+  lexPhase
+  >=> parsePhase
+  >=> const (return ())
+
+options :: MainOptions APhases AErrType Identity
+options =
+  MainOptions
+  { moPipeline = phases
+  , moName = "sb"
+  , moVersion = "0.0.1"
+  , moRunMonad = return . runIdentity
+  }
+
+main :: IO ()
+main = phasedMain options
+ 
