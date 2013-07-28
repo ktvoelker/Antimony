@@ -1,9 +1,10 @@
 
 module Lexer where
 
+import qualified Data.Set as S
 import H.Common
+import H.Common.IO
 import H.Lexer
-import H.Phase
 import Text.Parsec
 
 import Monad
@@ -14,12 +15,14 @@ instance IdClass AIdClass where
 
 type AToken = Token AIdClass
 
-lexPhase :: [InputFile] -> M [(AToken, SourcePos)]
+lexPhase :: [FilePath] -> M [(AToken, SourcePos)]
 lexPhase = stage ALex . tokenize aLexerSpec
 
-idPrefixChars = '_' : ['a' .. 'z'] ++ ['A' .. 'Z']
+idPrefixChars :: S.Set Char
+idPrefixChars = underscore <> alphas
 
-idChars = idPrefixChars ++ ['0' .. '9']
+idChars :: S.Set Char
+idChars = idPrefixChars <> digits
 
 aLexerSpec :: LexerSpec AIdClass
 aLexerSpec =
@@ -30,7 +33,7 @@ aLexerSpec =
     = StringSpec
     { sStringDelim = Just '"'
     , sCharDelim = Just '\''
-    , sInterpolate = Just ("{", "}")
+    , sInterpolate = Just ('{', '}')
     }
   , sInts = True
   , sNegative = Just "-"

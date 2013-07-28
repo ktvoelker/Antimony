@@ -14,9 +14,9 @@ type AParser = Parser AIdClass
 type AParserInput = ParserInput AIdClass
 
 parsePhase :: AParserInput -> M ()
-parsePhase = stage AParse . parse file "unknown"
+parsePhase = stage AParse . parse files
 
 -- TODO
-file :: AParser ()
-file = undefined
+files :: AParser ()
+files = undefined
 

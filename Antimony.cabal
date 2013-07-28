@@ -48,6 +48,7 @@ Executable antimony
     ConstraintKinds
     StandaloneDeriving
     LambdaCase
+    OverloadedStrings
   other-extensions:
     TemplateHaskell
 
