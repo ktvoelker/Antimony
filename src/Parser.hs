@@ -11,10 +11,8 @@ import Syntax ()
 
 type AParser = Parser AIdClass
 
-type AParserInput = ParserInput AIdClass
-
-parsePhase :: AParserInput -> M ()
-parsePhase = stage AParse . parse files
+parsePhase :: FileMap ATokens -> M ()
+parsePhase = stage AParse . void . parse files
 
 -- TODO
 files :: AParser ()

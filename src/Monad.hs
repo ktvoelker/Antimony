@@ -22,5 +22,5 @@ instance Show APhases where
 
 instance StageNames APhases where
 
-type M = MT APhases AErrType IO
+type M = MT APhases AErrType Identity
 

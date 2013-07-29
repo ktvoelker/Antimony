@@ -1,11 +1,8 @@
 
 module Lexer where
 
-import qualified Data.Set as S
 import H.Common
-import H.Common.IO
 import H.Lexer
-import Text.Parsec
 
 import Monad
 
@@ -15,13 +12,15 @@ instance IdClass AIdClass where
 
 type AToken = Token AIdClass
 
-lexPhase :: [FilePath] -> M [(AToken, SourcePos)]
+type ATokens = Tokens AIdClass
+
+lexPhase :: FileMap Text -> M (FileMap ATokens)
 lexPhase = stage ALex . tokenize aLexerSpec
 
-idPrefixChars :: S.Set Char
+idPrefixChars :: Set Char
 idPrefixChars = underscore <> alphas
 
-idChars :: S.Set Char
+idChars :: Set Char
 idChars = idPrefixChars <> digits
 
 aLexerSpec :: LexerSpec AIdClass
