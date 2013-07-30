@@ -2,34 +2,36 @@
 module Syntax where
 
 import H.Common
-import qualified Data.Map as M
-import qualified Data.Text as T
 
-newtype Id = Id T.Text deriving (Show)
+newtype Id = Id Text deriving (Eq, Ord, Show)
 
-newtype Qual = Qual [Id] deriving (Show)
+newtype Qual = Qual [Id] deriving (Eq, Ord, Show)
 
-newtype Attr = Attr T.Text deriving (Show)
+newtype Attr = Attr Text deriving (Eq, Ord, Show)
 
-data PrimType = PTStr | PTInt | PTBool deriving (Show)
+data PrimType = PTStr | PTInt | PTBool deriving (Eq, Ord, Enum, Bounded, Show)
 
-data ResType = ResType T.Text deriving (Show)
+data ResType = ResType Text deriving (Eq, Ord, Show)
 
 data Type =
     TPrim PrimType
   | TRes ResType
   | TFun [Type] Type
   | TNs
-  deriving (Show)
+  deriving (Eq, Show)
 
-data Prim = PStr T.Text | PInt Integer | PBool Bool deriving (Show)
+data Prim = PStr Text | PInt Integer | PBool Bool deriving (Eq, Show)
+
+type ResBody = Map Attr Expr
+
+type NsBody = Map Id (Bool, (Type, Expr))
 
 data Expr =
     EPrim Prim
-  | ERes  (M.Map Attr Expr)
+  | ERes  ResBody
   | EFun  [Id] Expr
-  | ENs   (M.Map Id (Type, Expr))
+  | ENs   NsBody
   | ERef  Qual
   | EApp  Expr [Expr]
-  deriving (Show)
+  deriving (Eq, Show)
 
