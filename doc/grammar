@@ -10,8 +10,6 @@ Syntax
 
 [public] identifier :: type { ... }
 
-public { ... }
-
 [public] identifier(pname :: ptype, ...) :: type {
   ...
 }
@@ -22,13 +20,11 @@ template(identifier) // built-in that returns str
 Interpolation
 -------------
 
-$onepart
-
-${multi.part}
+{multi.part}
 
 
 Types
 -----
 
-str, int, float, bool, rec, file, pkg, svc, set
+str, int, bool, ns, file, pkg, svc
 
