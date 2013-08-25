@@ -32,7 +32,8 @@ aLexerSpec =
     = StringSpec
     { sStringDelim = Just '"'
     , sCharDelim = Just '\''
-    , sInterpolate = Just ('{', '}')
+    , sInterpOne = Nothing
+    , sInterpMany = Just ('{', '}')
     }
   , sInts = True
   , sNegative = Just "-"
@@ -41,7 +42,7 @@ aLexerSpec =
   , sComments
     = CommentSpec
     { sLineComment  = Just "//"
-    , sBlockComment = Just ("/*", "*/", True)
+    , sBlockComment = Just ("/*", "*/")
     }
   }
 

@@ -2,5 +2,9 @@
 TODO
 ====
 
-Fix exprStr by improving interpolation support in Hydrogen
+Test the parser
+
+Write the checker
+
+Write the interpreter
 

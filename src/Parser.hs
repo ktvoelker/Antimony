@@ -3,10 +3,8 @@ module Parser where
 
 import qualified Data.Map as M
 import H.Common
-import H.Lexer (Token(InterpString))
 import H.Parser
 import Text.Parsec hiding (parse, many, (<|>), optional)
-import qualified Text.Parsec as P
 
 import Lexer
 import Monad
@@ -91,22 +89,23 @@ expr = exprLit <|> exprStr <|> exprRef
 exprLit :: AParser Expr
 exprLit = ELit <$> (LitInt <$> litInt <|> LitBool <$> litBool)
 
-interpChunks :: AParser [Either ATokens Text]
-interpChunks = tok "string" $ \case
-  InterpString xs -> Just xs
-  _ -> Nothing
-
 emptyStr :: Expr
 emptyStr = ELit (LitStr "")
 
+mkAppend :: Expr -> Expr -> Expr
+mkAppend a b = EApp (EPrim PrimConcat) [a, b]
+
+mkConcat :: [Expr] -> Expr
+mkConcat = foldr mkAppend emptyStr
+
 exprStr :: AParser Expr
-exprStr =
-  foldr (\a b -> EApp (EPrim PrimConcat) [a, b]) emptyStr . map f <$> interpChunks
-  where
-    f (Left tokens) = case P.parse expr "" tokens of
-      Left err -> EParseError . showText $ err
-      Right e -> e
-    f (Right lit) = ELit (LitStr lit)
+exprStr = mkConcat <$> between beginString endString (many strPart)
+
+strPart :: AParser Expr
+strPart =
+  (ELit . LitStr <$> stringContent)
+  <|>
+  (between beginInterp endInterp expr)
 
 exprRef :: AParser Expr
 exprRef = f <$> qual <*> optionMaybe fnArgs
