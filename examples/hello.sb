@@ -1,0 +1,17 @@
+
+ns hello;
+
+hello :: str = "Hello, world!";
+
+ns nested {
+  hello_again :: str = "{hello} {foo(hello)}";
+}
+
+foo(input :: str) :: str = input;
+
+myNum :: int = 42;
+
+myBool :: bool = or(false, true);
+
+myNeg :: int = -42;
+

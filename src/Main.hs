@@ -18,7 +18,7 @@ options :: MainOptions APhases AErrType Identity
 options =
   MainOptions
   { moPipeline = phases
-  , moName = "sb"
+  , moName = "antimony"
   , moVersion = "0.0.1"
   , moRunMonad = return . runIdentity
   }

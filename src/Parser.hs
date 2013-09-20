@@ -55,7 +55,7 @@ fnParams :: AParser ([Id], [Type])
 fnParams = unzip <$> delimit "(" ")" (fnParam `sepBy` kw ",")
 
 fnParam :: AParser (Id, Type)
-fnParam = (,) <$> ident <*> typ
+fnParam = (,) <$> ident <*> (kw "::" *> typ)
 
 constWithType :: AParser (Type, Expr)
 constWithType = (,) <$> (kw "::" *> typ) <*> valBody

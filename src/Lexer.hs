@@ -26,18 +26,17 @@ idChars = idPrefixChars <> digits
 aLexerSpec :: LexerSpec AIdClass
 aLexerSpec =
   LexerSpec
-  { sKeywords    = ["ns", "public", ",", ";", "::", "{", "}", "(", ")", "."]
+  { sKeywords    = ["ns", "public", ",", ";", "::", "{", "}", "(", ")", ".", "="]
   , sIdentifiers = [(AIdClass, idPrefixChars, idChars)]
   , sStrings
     = StringSpec
     { sStringDelim = Just '"'
     , sCharDelim = Just '\''
-    , sInterpOne = Nothing
     , sInterpMany = Just ('{', '}')
     }
   , sInts = True
   , sNegative = Just "-"
-  , sFloats = True
+  , sFloats = False
   , sBools = Just ("false", "true")
   , sComments
     = CommentSpec
