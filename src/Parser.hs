@@ -74,7 +74,7 @@ typ = f . snd <$> anyIdentifier
     f xs = TRes (ResType xs)
 
 valBody :: AParser Expr
-valBody = resBody <|> exprBody
+valBody = resBody <|> exprBody <|> (kw ";" *> pure EExtern)
 
 resBody :: AParser Expr
 resBody = ERes . M.fromList <$> delimit "{" "}" (many attrBinding)
@@ -86,7 +86,7 @@ attrName :: AParser Attr
 attrName = Attr . snd <$> anyIdentifier
 
 exprBody :: AParser Expr
-exprBody = option EExtern (kw "=" *> expr) <* kw ";"
+exprBody = kw "=" *> expr <* kw ";"
 
 expr :: AParser Expr
 expr = exprLit <|> exprStr <|> exprRef
