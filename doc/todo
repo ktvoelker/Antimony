@@ -2,9 +2,15 @@
 TODO
 ====
 
-Test the parser
-
 Write the checker
 
-Write the interpreter
+  Check the types
+
+  Check for cycles
+
+Write the compiler
+
+  Produce an intermediate format
+
+Write the linker
 

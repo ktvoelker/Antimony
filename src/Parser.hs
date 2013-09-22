@@ -12,39 +12,44 @@ import Syntax
 
 type AParser = Parser AIdClass
 
-parsePhase :: FileMap ATokens -> M NsBody
+parsePhase :: FileMap ATokens -> M RecBody
 parsePhase = stage AParse . fmap (M.fromList . M.elems) . parse file
 
-public :: AParser Bool
-public = option False (kw "public" *> pure True)
+accessMode :: AParser Access
+accessMode = option Private (kw "public" *> pure Public <|> kw "extern" *> pure Extern)
 
 ident :: AParser Id
 ident = Id . snd <$> anyIdentifier
 
-file :: AParser (Id, (Bool, (Type, Expr)))
-file = nsBinding fileBody
+file :: AParser (Id, (Access, (Type, Expr)))
+file = withAccess $ recBinding fileBody
 
-nsBinding :: AParser NsBody -> AParser (Id, (Bool, (Type, Expr)))
-nsBinding bodyParser = f <$> public <* kw "ns" <*> ident <*> bodyParser
+recBinding :: AParser RecBody -> AParser (Id, (Type, Expr))
+recBinding bodyParser = f <$> (kw "rec" *> ident) <*> bodyParser
   where
-    f pub id body = (id, (pub, (TNs, ENs body)))
+    f id body = (id, (TRec, ERec body))
 
-fileBody :: AParser NsBody
+fileBody :: AParser RecBody
 fileBody =
   M.fromList <$> (kw ";" *> many binding)
   <|> 
-  nsBody
+  recBody
 
-nsBody :: AParser NsBody
-nsBody = M.fromList <$> delimit "{" "}" (many binding)
+recBody :: AParser RecBody
+recBody = M.fromList <$> delimit "{" "}" (many binding)
 
-binding :: AParser (Id, (Bool, (Type, Expr)))
-binding = nsBinding nsBody <|> valBinding
-
-valBinding :: AParser (Id, (Bool, (Type, Expr)))
-valBinding = f <$> public <*> ident <*> (fnWithType <|> constWithType)
+withAccess :: AParser (a, b) -> AParser (a, (Access, b))
+withAccess p = f <$> accessMode <*> p
   where
-    f pub id te = (id, (pub, te))
+    f acc (a, b) = (a, (acc, b))
+
+binding :: AParser (Id, (Access, (Type, Expr)))
+binding = withAccess $ recBinding recBody <|> valBinding
+
+valBinding :: AParser (Id, (Type, Expr))
+valBinding = f <$> ident <*> (fnWithType <|> constWithType)
+  where
+    f id te = (id, te)
 
 fnWithType :: AParser (Type, Expr)
 fnWithType = f <$> fnParams <*> (kw "::" *> typ) <*> valBody
@@ -81,7 +86,7 @@ attrName :: AParser Attr
 attrName = Attr . snd <$> anyIdentifier
 
 exprBody :: AParser Expr
-exprBody = kw "=" *> expr <* kw ";"
+exprBody = option EExtern (kw "=" *> expr) <* kw ";"
 
 expr :: AParser Expr
 expr = exprLit <|> exprStr <|> exprRef

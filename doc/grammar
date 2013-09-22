@@ -6,7 +6,7 @@ Syntax
 
 [public] ns foo { ... }
 
-[public] identifier :: type = ...;
+[ext] [public] identifier :: type = ...;
 
 [public] identifier :: type { ... }
 

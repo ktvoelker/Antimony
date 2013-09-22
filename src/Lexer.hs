@@ -26,7 +26,8 @@ idChars = idPrefixChars <> digits
 aLexerSpec :: LexerSpec AIdClass
 aLexerSpec =
   LexerSpec
-  { sKeywords    = ["ns", "public", ",", ";", "::", "{", "}", "(", ")", ".", "="]
+  { sKeywords
+    = ["rec", "public", "extern", ",", ";", "::", "{", "}", "(", ")", ".", "="]
   , sIdentifiers = [(AIdClass, idPrefixChars, idChars)]
   , sStrings
     = StringSpec

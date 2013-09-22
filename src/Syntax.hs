@@ -17,7 +17,7 @@ data Type =
     TPrim PrimType
   | TRes ResType
   | TFun [Type] Type
-  | TNs
+  | TRec
   deriving (Eq, Show)
 
 data Lit = LitStr Text | LitInt Integer | LitBool Bool deriving (Eq, Show)
@@ -26,16 +26,19 @@ data Prim = PrimConcat deriving (Eq, Ord, Enum, Bounded, Show)
 
 type ResBody = Map Attr Expr
 
-type NsBody = Map Id (Bool, (Type, Expr))
+data Access = Private | Public | Extern deriving (Eq, Ord, Enum, Bounded, Show)
+
+type RecBody = Map Id (Access, (Type, Expr))
 
 data Expr =
     ELit  Lit
   | ERes  ResBody
   | EFun  [Id] Expr
-  | ENs   NsBody
+  | ERec  RecBody
   | ERef  Qual
   | EPrim Prim
   | EApp  Expr [Expr]
+  | EExtern
   | EParseError Text
   deriving (Eq, Show)
 
