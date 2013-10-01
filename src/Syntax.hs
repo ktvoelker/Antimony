@@ -5,7 +5,7 @@ import H.Common
 
 newtype Id = Id Text deriving (Eq, Ord, Show)
 
-newtype Qual = Qual [Id] deriving (Eq, Ord, Show)
+data Qual a = Qual a [Text] deriving (Eq, Ord, Show)
 
 newtype Attr = Attr Text deriving (Eq, Ord, Show)
 
@@ -22,22 +22,22 @@ data Type =
 
 data Lit = LitStr Text | LitInt Integer | LitBool Bool deriving (Eq, Show)
 
-data Prim = PrimConcat deriving (Eq, Ord, Enum, Bounded, Show)
+data PrimOp = PrimConcat deriving (Eq, Ord, Enum, Bounded, Show)
 
-type ResBody = Map Attr Expr
+type ResBody a = Map Attr (Expr a)
 
 data Access = Private | Public | Extern deriving (Eq, Ord, Enum, Bounded, Show)
 
-type RecBody = Map Id (Access, (Type, Expr))
+type RecBody a = Map a (Access, (Type, Expr a))
 
-data Expr =
+data Expr a =
     ELit  Lit
-  | ERes  ResBody
-  | EFun  [Id] Expr
-  | ERec  RecBody
-  | ERef  Qual
-  | EPrim Prim
-  | EApp  Expr [Expr]
+  | ERes  (ResBody a)
+  | EFun  [a] (Expr a)
+  | ERec  (RecBody a)
+  | ERef  (Qual a)
+  | EPrim PrimOp
+  | EApp  (Expr a) [Expr a]
   | EExtern
   | EParseError Text
   deriving (Eq, Show)

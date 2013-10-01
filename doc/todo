@@ -2,15 +2,13 @@
 TODO
 ====
 
+Write the renamer
+
+Write the sorter
+
 Write the checker
 
-  Check the types
-
-  Check for cycles
-
-Write the compiler
-
-  Produce an intermediate format
+Write the compiler (produce an intermediate format)
 
 Write the linker
 
