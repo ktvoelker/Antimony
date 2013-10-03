@@ -3,7 +3,7 @@ module Syntax where
 
 import H.Common
 
-newtype Id = Id Text deriving (Eq, Ord, Show)
+newtype Id = Id { idText :: Text } deriving (Eq, Ord, Show)
 
 data Qual a = Qual a [Text] deriving (Eq, Ord, Show)
 

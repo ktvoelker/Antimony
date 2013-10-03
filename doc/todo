@@ -2,6 +2,12 @@
 TODO
 ====
 
+Fix it
+
+Figure out what's up with the <Fail>s in the BNF output
+
+Add custom resource types
+
 Write the renamer
 
 Write the sorter
