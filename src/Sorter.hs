@@ -6,6 +6,6 @@ import H.Common
 import Monad
 import Syntax
 
-sortPhase :: RecBody Unique -> M (RecBody Unique)
+sortPhase :: Namespace Unique -> M (Namespace Unique)
 sortPhase = stage ASort . undefined
 

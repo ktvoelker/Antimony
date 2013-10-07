@@ -7,16 +7,9 @@ newtype Id = Id { idText :: Text } deriving (Eq, Ord, Show)
 
 data Qual a = Qual a [Text] deriving (Eq, Ord, Show)
 
-newtype Attr = Attr Text deriving (Eq, Ord, Show)
-
-data PrimType = PTStr | PTInt | PTBool deriving (Eq, Ord, Enum, Bounded, Show)
-
-data ResType = ResType Text deriving (Eq, Ord, Show)
-
-data Type =
-    TPrim PrimType
-  | TRes ResType
-  | TFun [Type] Type
+data Type a =
+    TFun [Type a] (Type a)
+  | TRef (Qual a)
   | TRec
   deriving (Eq, Show)
 
@@ -24,21 +17,28 @@ data Lit = LitStr Text | LitInt Integer | LitBool Bool deriving (Eq, Show)
 
 data PrimOp = PrimConcat deriving (Eq, Ord, Enum, Bounded, Show)
 
-type ResBody a = Map Attr (Expr a)
-
 data Access = Private | Public | Extern deriving (Eq, Ord, Enum, Bounded, Show)
 
-type RecBody a = Map a (Access, (Type, Expr a))
+type Namespace a = Map a (Decl a)
+
+data BoundExpr a = BoundExpr Access (Type a) (Maybe (Expr a))
+  deriving (Eq, Show)
+
+data Decl a =
+    DNamespace Access (Namespace a)
+  | DType (Map a (BoundExpr a))
+  | DVal (BoundExpr a)
+  deriving (Eq, Show)
+
+newtype Attr = Attr Text deriving (Eq, Ord, Show)
 
 data Expr a =
     ELit  Lit
-  | ERes  (ResBody a)
   | EFun  [a] (Expr a)
-  | ERec  (RecBody a)
   | ERef  (Qual a)
   | EPrim PrimOp
   | EApp  (Expr a) [Expr a]
-  | EExtern
+  | ERes  Attr (Expr a)
   | EParseError Text
   deriving (Eq, Show)
 

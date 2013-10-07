@@ -2,17 +2,17 @@
 Syntax
 ======
 
-[public] ns foo; ...
+extern identifier :: type;
 
-[public] ns foo { ... }
-
-[ext] [public] identifier :: type = ...;
+[public] identifier :: type = ...;
 
 [public] identifier :: type { ... }
 
 [public] identifier(pname :: ptype, ...) :: type {
   ...
 }
+
+[public] type foo { ... } // can have defaults in terms of other attributes
 
 template(identifier) // built-in that returns str
 

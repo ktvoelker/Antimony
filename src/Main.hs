@@ -22,25 +22,32 @@ phases =
   >=> checkPhase
   >=> const (return ())
 
-options :: MainOptions APhases AErrType Identity
-options =
-  MainOptions
-  { moPipeline = phases
-  , moName = "antimony"
-  , moVersion = "0.0.1"
-  , moRunMonad = return . runIdentity
-  , moChoices = [(bnf, bnfTI)]
-  }
+phaseCmd :: Command
+phaseCmd =
+  phasedCommand
+  $ PhasedCommandOptions
+    { oPipeline = phases
+    , oRunMonad = return . runIdentity
+    , oDefault  = ASort
+    , oCommand  = "compile"
+    , oDoc      = "Compile the input files"
+    }
 
-bnf :: Term (IO ())
-bnf = pure . print . parserToBNF $ file
-
-bnfTI :: TermInfo
-bnfTI = defTI
-  { termName = "grammar"
-  , termDoc = "Show the grammar"
-  }
+bnfCmd :: Command
+bnfCmd = (term, info)
+  where
+    term = pure . print . parserToBNF $ file
+    info = defTI
+      { termName = "grammar"
+      , termDoc = "Show the grammar"
+      }
 
 main :: IO ()
-main = phasedMain options
- 
+main =
+  commandMain
+  $ MainOptions
+    { oName     = "antimony"
+    , oVersion  = "0.0.1"
+    , oCommands = [bnfCmd, phaseCmd]
+    }
+

@@ -4,7 +4,9 @@ module Monad where
 import H.Common
 
 data AErrType =
-    EUnbound
+    EMerge
+  | EMergeAccess
+  | EUnbound
   | ECircRef
   deriving (Eq, Ord, Enum, Bounded, Read, Show)
 

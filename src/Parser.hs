@@ -22,8 +22,8 @@ instance IsString Sym where
 
 type AParser = Parser Sym AIdClass
 
-parsePhase :: FileMap ATokens -> M (RecBody Id)
-parsePhase = stage AParse . fmap (M.fromList . M.elems) . parse file
+parsePhase :: FileMap ATokens -> M (FileMap (RecBody Id))
+parsePhase = stage AParse . parse file
 
 accessMode :: AParser Access
 accessMode =
@@ -33,72 +33,58 @@ accessMode =
 ident :: AParser Id
 ident = label "ident" $ Id . snd <$> anyIdentifier
 
-file :: AParser (Id, (Access, (Type, Expr Id)))
-file = label "file" $ withAccess $ recBinding fileBody
-
-recBinding :: AParser (RecBody Id) -> AParser (Id, (Type, Expr Id))
-recBinding bodyParser = f <$> (kw "rec" *> ident) <*> bodyParser
-  where
-    f id body = (id, (TRec, ERec body))
-
-fileBody :: AParser (RecBody Id)
-fileBody =
-  M.fromList <$> (kw ";" *> many binding)
-  <|> 
-  recBody
+file :: AParser (RecBody Id)
+file = label "file" recBody
 
 recBody :: AParser (RecBody Id)
-recBody = label "rec-body" $ M.fromList <$> delimit "{" "}" (many binding)
+recBody = label "rec-body" $ M.fromList <$> delimit "{" "}" (many decl)
 
-withAccess :: AParser (a, b) -> AParser (a, (Access, b))
-withAccess p = f <$> accessMode <*> p
+decl :: AParser (Id, Decl Id)
+decl = declType <|> declVal
+
+declType :: AParser (Id, Decl Id)
+declType = label "decl-type" $ (,) <$> (kw "type" *> ident) <*> (DType <$> tyBody)
+
+tyBody :: AParser (Map Id (BoundExpr Id))
+tyBody = label "ty-body" $ M.fromList <$> delimit "{" "}" (many boundExpr)
+
+declVal :: AParser (Id, Decl Id)
+declVal = label "decl-val" $ f <$> boundExpr
   where
-    f acc (a, b) = (a, (acc, b))
+    f (id, be) = (id, DVal be)
 
-binding :: AParser (Id, (Access, (Type, Expr Id)))
-binding =
-  label "binding"
-  $ withAccess
-  $ label "rec-binding" (recBinding recBody) <|> valBinding
+boundExpr :: AParser (Id, BoundExpr Id)
+boundExpr = label "bound-expr" $ f <$> accessMode <*> valBinding
+  where
+    f access (id, (ty, exp)) = (id, BoundExpr access ty exp)
 
-valBinding :: AParser (Id, (Type, Expr Id))
+valBinding :: AParser (Id, (Type Id, Maybe (Expr Id)))
 valBinding = f <$> ident <*> (fnWithType <|> constWithType)
   where
     f id te = (id, te)
 
-fnWithType :: AParser (Type, Expr Id)
+fnWithType :: AParser (Type Id, Maybe (Expr Id))
 fnWithType = f <$> fnParams <*> (kw "::" *> typ) <*> valBody
   where
-    f (pNames, pTypes) retType body = (TFun pTypes retType, EFun pNames body)
+    f (pNames, pTypes) retType body = (TFun pTypes retType, Just $ EFun pNames body)
 
-fnParams :: AParser ([Id], [Type])
+fnParams :: AParser ([Id], [Type Id])
 fnParams = unzip <$> delimit "(" ")" (fnParam `sepBy` kw ",")
 
-fnParam :: AParser (Id, Type)
+fnParam :: AParser (Id, Type Id)
 fnParam = label "param" $ (,) <$> ident <*> (kw "::" *> typ)
 
-constWithType :: AParser (Type, Expr Id)
-constWithType = (,) <$> (kw "::" *> typ) <*> valBody
+constWithType :: AParser (Type Id, Maybe (Expr Id))
+constWithType = (,) <$> (kw "::" *> typ) <*> ((Just <$> valBody) <|> emptyBody)
 
-typ :: AParser Type
-typ = label "type" $ f . snd <$> anyIdentifier
-  where
-    f "str" = TPrim PTStr
-    f "int" = TPrim PTInt
-    f "bool" = TPrim PTBool
-    f xs = TRes (ResType xs)
+typ :: AParser (Type Id)
+typ = label "type" $ TRef <$> qual
 
 valBody :: AParser (Expr Id)
-valBody = resBody <|> exprBody <|> (kw ";" *> pure EExtern)
+valBody = (ERec <$> recBody) <|> exprBody
 
-resBody :: AParser (Expr Id)
-resBody = label "res" $ ERes . M.fromList <$> delimit "{" "}" (many attrBinding)
-
-attrBinding :: AParser (Attr, Expr Id)
-attrBinding = (,) <$> attrName <*> (kw "=" *> expr <* kw ";")
-
-attrName :: AParser Attr
-attrName = Attr . snd <$> anyIdentifier
+emptyBody :: AParser (Maybe (Expr Id))
+emptyBody = kw ";" *> pure Nothing
 
 exprBody :: AParser (Expr Id)
 exprBody = kw "=" *> expr <* kw ";"
