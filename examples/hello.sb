@@ -1,9 +1,9 @@
 
-rec hello;
+ns hello;
 
 hello :: str = "Hello, world!";
 
-rec nested {
+ns nested {
   hello_again :: str = "{hello} {foo(hello)}";
 }
 

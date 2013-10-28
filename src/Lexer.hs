@@ -27,7 +27,7 @@ aLexerSpec :: LexerSpec AIdClass
 aLexerSpec =
   LexerSpec
   { sKeywords
-    = ["rec", "public", "extern", ",", ";", "::", "{", "}", "(", ")", ".", "="]
+    = ["ns", "public", "extern", ",", ";", "::", "{", "}", "(", ")", ".", "="]
   , sIdentifiers = [(AIdClass, idPrefixChars, idChars)]
   , sStrings
     = StringSpec

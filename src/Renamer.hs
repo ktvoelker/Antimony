@@ -19,9 +19,9 @@ renameFiles = mergeNamespaces . M.elems >=> renameNamespace
 mergeNamespaces :: [Namespace Id] -> RenM (Namespace Id)
 mergeNamespaces = foldM (unionWithM merge) M.empty
 
-merge :: Decl Id -> Decl Id -> RenM (Decl Id)
-merge (DNamespace ax dx) (DNamespace ay dy)
-  | ax == ay  = DNamespace ax <$> mergeNamespaces [dx, dy]
+merge :: (Access, Decl Id) -> (Access, Decl Id) -> RenM (Access, Decl Id)
+merge (ax, DNamespace dx) (ay, DNamespace dy)
+  | ax == ay  = (ax,) . DNamespace <$> mergeNamespaces [dx, dy]
   | otherwise = fatal $ Err (ECustom EMergeAccess) Nothing Nothing Nothing
 merge _ _ = fatal $ Err (ECustom EMerge) Nothing Nothing Nothing
 
@@ -29,7 +29,7 @@ renameNamespace :: Namespace Id -> RenM (Namespace Unique)
 renameNamespace bs =
   scope' (nextUnique . idText) (M.keys bs)
   . (M.fromList <$>)
-  . mapM (\(k, v) -> (,) <$> findInScope k <*> renameDecl v)
+  . mapM (\(k, v) -> (,) <$> findInScope k <*> renameDeclAccess v)
   . M.toList
   $ bs
 
@@ -37,14 +37,17 @@ renameExpr :: Expr Id -> RenM (Expr Unique)
 -- TODO
 renameExpr = undefined
 
+renameDeclAccess :: (Access, Decl Id) -> RenM (Access, Decl Unique)
+renameDeclAccess (a, d) = (a,) <$> renameDecl d
+
 renameDecl :: Decl Id -> RenM (Decl Unique)
-renameDecl (DVal (BoundExpr a t e)) =
-  (DVal .) . BoundExpr a
+renameDecl (DVal (BoundExpr t e)) =
+  (DVal .) . BoundExpr
     <$> renameType t
     <*> maybe (pure Nothing) ((Just <$>) . renameExpr) e
 -- TODO
 renameDecl (DType bs) = undefined bs
-renameDecl (DNamespace acc bs) = undefined acc bs
+renameDecl (DNamespace bs) = undefined bs
 
 renameType :: Type Id -> RenM (Type Unique)
 -- TODO

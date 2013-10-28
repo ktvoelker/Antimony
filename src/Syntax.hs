@@ -10,7 +10,6 @@ data Qual a = Qual a [Text] deriving (Eq, Ord, Show)
 data Type a =
     TFun [Type a] (Type a)
   | TRef (Qual a)
-  | TRec
   deriving (Eq, Show)
 
 data Lit = LitStr Text | LitInt Integer | LitBool Bool deriving (Eq, Show)
@@ -19,14 +18,16 @@ data PrimOp = PrimConcat deriving (Eq, Ord, Enum, Bounded, Show)
 
 data Access = Private | Public | Extern deriving (Eq, Ord, Enum, Bounded, Show)
 
-type Namespace a = Map a (Decl a)
+type Namespace a = DeclMap Decl a
 
-data BoundExpr a = BoundExpr Access (Type a) (Maybe (Expr a))
+type DeclMap d a = Map a (Access, d a)
+
+data BoundExpr a = BoundExpr (Type a) (Maybe (Expr a))
   deriving (Eq, Show)
 
 data Decl a =
-    DNamespace Access (Namespace a)
-  | DType (Map a (BoundExpr a))
+    DNamespace (Namespace a)
+  | DType (DeclMap BoundExpr a)
   | DVal (BoundExpr a)
   deriving (Eq, Show)
 

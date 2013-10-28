@@ -6,9 +6,9 @@ import H.Common
 import Monad
 import Syntax
 
-checkPhase :: RecBody Unique -> M (RecBody Unique)
+checkPhase :: Namespace Unique -> M (Namespace Unique)
 checkPhase b = stage ACheck $ check b *> pure b
 
-check :: RecBody Unique -> M ()
+check :: Namespace Unique -> M ()
 check = undefined
 
