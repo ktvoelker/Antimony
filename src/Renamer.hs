@@ -34,8 +34,16 @@ renameNamespace bs =
   $ bs
 
 renameExpr :: Expr Id -> RenM (Expr Unique)
+renameExpr (EFun params body) =
+  scope' (nextUnique . idText) params
+  $ EFun <$> mapM findInScope params <*> renameExpr body
 -- TODO
-renameExpr = undefined
+renameExpr (EApp fn args) = undefined fn args
+renameExpr (ERec bs) = undefined bs
+renameExpr (ERef qual) = undefined qual
+renameExpr (ELit lit) = return $ ELit lit
+renameExpr (EPrim prim) = return $ EPrim prim
+renameExpr (EParseError msg) = return $ EParseError msg
 
 renameDeclAccess :: (Access, Decl Id) -> RenM (Access, Decl Unique)
 renameDeclAccess (a, d) = (a,) <$> renameDecl d
