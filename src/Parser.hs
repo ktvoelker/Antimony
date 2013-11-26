@@ -109,7 +109,7 @@ exprBody :: AParser (Expr Id)
 exprBody = kw "=" *> expr <* kw ";"
 
 expr :: AParser (Expr Id)
-expr = label "expr" $ exprLit <|> exprStr <|> exprRef
+expr = label "expr" $ exprLit <|> exprStr <|> exprRef <|> exprRec
 
 exprLit :: AParser (Expr Id)
 exprLit = label "lit" $ ELit <$> (LitInt <$> litInt <|> LitBool <$> litBool)
@@ -137,6 +137,15 @@ exprRef = f <$> qual <*> optional fnArgs
   where
     f q Nothing = ERef q
     f q (Just args) = EApp (ERef q) args
+
+exprRec :: AParser (Expr Id)
+exprRec = label "rec" $ ERec <$> recBody
+
+recBody :: AParser (Map Id (Expr Id))
+recBody = M.fromList <$> delimit "{" "}" (many $ recBind)
+
+recBind :: AParser (Id, Expr Id)
+recBind = (,) <$> ident <*> (kw "=" *> expr <* kw ";")
 
 fnArgs :: AParser [Expr Id]
 fnArgs = delimit "(" ")" $ expr `sepBy` kw ","

@@ -18,20 +18,18 @@ data PrimOp = PrimConcat deriving (Eq, Ord, Enum, Bounded, Show)
 
 data Access = Private | Public | Extern deriving (Eq, Ord, Enum, Bounded, Show)
 
-type Namespace a = DeclMap Decl a
+type Namespace a = DeclMap a Decl
 
-type DeclMap d a = Map a (Access, d a)
+type DeclMap a d = Map a (Access, d a)
 
 data BoundExpr a = BoundExpr (Type a) (Maybe (Expr a))
   deriving (Eq, Show)
 
 data Decl a =
     DNamespace (Namespace a)
-  | DType (DeclMap BoundExpr a)
+  | DType (DeclMap a BoundExpr)
   | DVal (BoundExpr a)
   deriving (Eq, Show)
-
-newtype Attr = Attr Text deriving (Eq, Ord, Show)
 
 data Expr a =
     ELit  Lit
@@ -39,7 +37,7 @@ data Expr a =
   | ERef  (Qual a)
   | EPrim PrimOp
   | EApp  (Expr a) [Expr a]
-  | ERes  Attr (Expr a)
+  | ERec  (Map a (Expr a))
   | EParseError Text
   deriving (Eq, Show)
 
