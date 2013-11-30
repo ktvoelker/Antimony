@@ -25,39 +25,41 @@ merge (ax, DNamespace dx) (ay, DNamespace dy)
   | otherwise = fatal $ Err (ECustom EMergeAccess) Nothing Nothing Nothing
 merge _ _ = fatal $ Err (ECustom EMerge) Nothing Nothing Nothing
 
+scopeForBindings :: [Id] -> RenM a -> RenM a
+scopeForBindings = scope' $ nextUnique . idText
+
+renameQual :: Qual Id -> RenM (Qual Unique)
+renameQual (Qual id ms) = Qual <$> findInScope id <*> pure ms
+
 renameNamespace :: Namespace Id -> RenM (Namespace Unique)
-renameNamespace bs =
-  scope' (nextUnique . idText) (M.keys bs)
-  . (M.fromList <$>)
-  . mapM (\(k, v) -> (,) <$> findInScope k <*> renameDeclAccess v)
-  . M.toList
-  $ bs
+renameNamespace = renameScopeMap $ onSndF renameDecl
+
+renameScopeMap :: (a -> RenM b) -> Map Id a -> RenM (Map Unique b)
+renameScopeMap f bs = scopeForBindings (M.keys bs) $ g bs
+  where
+    f' (id, val) = (,) <$> findInScope id <*> f val
+    g = fmap M.fromList . mapM f' . M.toList
 
 renameExpr :: Expr Id -> RenM (Expr Unique)
-renameExpr (EFun params body) =
-  scope' (nextUnique . idText) params
-  $ EFun <$> mapM findInScope params <*> renameExpr body
--- TODO
-renameExpr (EApp fn args) = undefined fn args
-renameExpr (ERec bs) = undefined bs
-renameExpr (ERef qual) = undefined qual
-renameExpr (ELit lit) = return $ ELit lit
-renameExpr (EPrim prim) = return $ EPrim prim
-renameExpr (EParseError msg) = return $ EParseError msg
-
-renameDeclAccess :: (Access, Decl Id) -> RenM (Access, Decl Unique)
-renameDeclAccess (a, d) = (a,) <$> renameDecl d
+renameExpr (EFun ps b) =
+  scopeForBindings ps $ EFun <$> mapM findInScope ps <*> renameExpr b
+renameExpr (ERec bs) = ERec <$> renameScopeMap renameExpr bs
+renameExpr (ERef qual) = ERef <$> renameQual qual
+renameExpr (EApp fn args) = EApp <$> renameExpr fn <*> mapM renameExpr args
+renameExpr (ELit lit) = pure $ ELit lit
+renameExpr (EPrim prim) = pure $ EPrim prim
+renameExpr (EParseError msg) = pure $ EParseError msg
 
 renameDecl :: Decl Id -> RenM (Decl Unique)
-renameDecl (DVal (BoundExpr t e)) =
-  (DVal .) . BoundExpr
-    <$> renameType t
-    <*> maybe (pure Nothing) ((Just <$>) . renameExpr) e
--- TODO
-renameDecl (DType bs) = undefined bs
-renameDecl (DNamespace bs) = undefined bs
+renameDecl (DVal b) = DVal <$> renameBoundExpr b
+renameDecl (DType bs) = DType <$> renameScopeMap (onSndF renameBoundExpr) bs
+renameDecl (DNamespace ds) = DNamespace <$> renameNamespace ds
 
 renameType :: Type Id -> RenM (Type Unique)
--- TODO
-renameType = undefined
+renameType (TFun ps r) = TFun <$> mapM renameType ps <*> renameType r
+renameType (TRef qual) = TRef <$> renameQual qual
+
+renameBoundExpr :: BoundExpr Id -> RenM (BoundExpr Unique)
+renameBoundExpr (BoundExpr ty body) =
+  BoundExpr <$> renameType ty <*> maybe (pure Nothing) ((Just <$>) . renameExpr) body
 
