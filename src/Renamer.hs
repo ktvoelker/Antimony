@@ -6,6 +6,7 @@ import H.Common
 import H.Monad.Scope
 
 import Monad
+import Prim
 import Syntax
 
 type RenM = ScopeT Id Unique M
@@ -14,7 +15,7 @@ renamePhase :: FileMap (Namespace Id) -> M (Namespace Unique)
 renamePhase = stage ARename . runScopeT . renameFiles
 
 renameFiles :: FileMap (Namespace Id) -> RenM (Namespace Unique)
-renameFiles = mergeNamespaces . M.elems >=> renameNamespace
+renameFiles = M.elems >>> mergeNamespaces >=> addPrimOps >>> renameNamespace
 
 mergeNamespaces :: [Namespace Id] -> RenM (Namespace Id)
 mergeNamespaces = liftM M.toList . foldM (unionWithM merge) M.empty . map M.fromList

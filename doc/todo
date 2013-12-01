@@ -2,9 +2,9 @@
 TODO
 ====
 
-Before the renamer phase, add all prims into the top-level namespace
+Figure out the right representation for primitive types
 
-  This should be a new phase
+  There are two kinds: atomic primitive types, and compound primitives (like files)
 
 Don't let prim names appear in binding positions in the parser
 
