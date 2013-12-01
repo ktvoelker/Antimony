@@ -9,6 +9,7 @@ import Text.Parsec.Applicative hiding (Parser, parse)
 
 import Lexer
 import Monad
+import Prim
 import Syntax
 
 newtype Sym = Sym { unSym :: Text } deriving (Eq, Ord)
@@ -30,7 +31,10 @@ accessMode =
   $ option Private (kw "public" *> pure Public <|> kw "extern" *> pure Extern)
 
 ident :: AParser Id
-ident = label "ident" $ Id . snd <$> anyIdentifier
+ident = label "ident" $ f <$> anyIdentifier
+  where
+    f (AIdPrim, xs) = Prim . primId . T.tail $ xs
+    f (AIdUser, xs) = Id xs
 
 file :: AParser (Namespace Id)
 file = label "file" $ (: []) <$> withAccess fileNamespace
@@ -117,7 +121,7 @@ emptyStr :: Expr Id
 emptyStr = ELit (LitStr "")
 
 mkAppend :: Expr Id -> Expr Id -> Expr Id
-mkAppend a b = EApp (EPrim PrimConcat) [a, b]
+mkAppend a b = EApp (EPrim primConcat) [a, b]
 
 mkConcat :: [Expr Id] -> Expr Id
 mkConcat = foldr mkAppend emptyStr

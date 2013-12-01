@@ -3,7 +3,7 @@ module Syntax where
 
 import H.Common
 
-newtype Id = Id { idText :: Text } deriving (Eq, Ord, Show)
+data Id = Id Text | Prim PrimId deriving (Eq, Ord, Show)
 
 data Qual a = Qual a [Text] deriving (Eq, Ord, Show)
 
@@ -13,8 +13,6 @@ data Type a =
   deriving (Eq, Show)
 
 data Lit = LitStr Text | LitInt Integer | LitBool Bool deriving (Eq, Show)
-
-data PrimOp = PrimConcat deriving (Eq, Ord, Enum, Bounded, Show)
 
 data Access = Private | Public | Extern deriving (Eq, Ord, Enum, Bounded, Show)
 
@@ -35,8 +33,8 @@ data Expr a =
     ELit  Lit
   | EFun  [a] (Expr a)
   | ERef  (Qual a)
-  | EPrim PrimOp
   | EApp  (Expr a) [Expr a]
   | ERec  [(a, (Expr a))]
+  | EPrim PrimId
   deriving (Eq, Show)
 

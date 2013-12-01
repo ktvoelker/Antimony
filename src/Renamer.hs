@@ -26,7 +26,10 @@ merge (ax, DNamespace dx) (ay, DNamespace dy)
 merge _ _ = fatal $ Err (ECustom EMerge) Nothing Nothing Nothing
 
 scopeForBindings :: [Id] -> RenM a -> RenM a
-scopeForBindings = scope' $ nextUnique . idText
+scopeForBindings = scope' f
+  where
+    f (Id xs) = nextUnique xs
+    f (Prim id) = pure $ primUnique id
 
 renameQual :: Qual Id -> RenM (Qual Unique)
 renameQual (Qual id ms) = Qual <$> findInScope id <*> pure ms
@@ -46,7 +49,7 @@ renameExpr (ERec bs) = ERec <$> renameScopeMap renameExpr bs
 renameExpr (ERef qual) = ERef <$> renameQual qual
 renameExpr (EApp fn args) = EApp <$> renameExpr fn <*> mapM renameExpr args
 renameExpr (ELit lit) = pure $ ELit lit
-renameExpr (EPrim prim) = pure $ EPrim prim
+renameExpr (EPrim id) = pure $ EPrim id
 
 renameDecl :: Decl Id -> RenM (Decl Unique)
 renameDecl (DVal b) = DVal <$> renameBoundExpr b

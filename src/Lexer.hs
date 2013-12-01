@@ -1,12 +1,13 @@
 
 module Lexer where
 
+import qualified Data.Set as S
 import H.Common
 import H.Lexer
 
 import Monad
 
-data AIdClass = AIdClass deriving (Eq, Ord, Enum, Bounded, Show)
+data AIdClass = AIdPrim | AIdUser deriving (Eq, Ord, Enum, Bounded, Show)
 
 instance IdClass AIdClass where
 
@@ -16,6 +17,9 @@ type ATokens = Tokens AIdClass
 
 lexPhase :: FileMap Text -> M (FileMap ATokens)
 lexPhase = stage ALex . tokenize aLexerSpec
+
+primPrefixChars :: Set Char
+primPrefixChars = S.singleton '#'
 
 idPrefixChars :: Set Char
 idPrefixChars = underscore <> alphas
@@ -28,7 +32,10 @@ aLexerSpec =
   LexerSpec
   { sKeywords
     = ["ns", "public", "extern", ",", ";", "::", "{", "}", "(", ")", ".", "="]
-  , sIdentifiers = [(AIdClass, idPrefixChars, idChars)]
+  , sIdentifiers =
+    [ (AIdPrim, primPrefixChars, idChars)
+    , (AIdUser, idPrefixChars, idChars)
+    ]
   , sStrings
     = StringSpec
     { sStringDelim = Just '"'
