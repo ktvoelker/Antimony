@@ -17,7 +17,7 @@ renameFiles :: FileMap (Namespace Id) -> RenM (Namespace Unique)
 renameFiles = mergeNamespaces . M.elems >=> renameNamespace
 
 mergeNamespaces :: [Namespace Id] -> RenM (Namespace Id)
-mergeNamespaces = foldM (unionWithM merge) M.empty
+mergeNamespaces = liftM M.toList . foldM (unionWithM merge) M.empty . map M.fromList
 
 merge :: (Access, Decl Id) -> (Access, Decl Id) -> RenM (Access, Decl Id)
 merge (ax, DNamespace dx) (ay, DNamespace dy)
@@ -34,11 +34,10 @@ renameQual (Qual id ms) = Qual <$> findInScope id <*> pure ms
 renameNamespace :: Namespace Id -> RenM (Namespace Unique)
 renameNamespace = renameScopeMap $ onSndF renameDecl
 
-renameScopeMap :: (a -> RenM b) -> Map Id a -> RenM (Map Unique b)
-renameScopeMap f bs = scopeForBindings (M.keys bs) $ g bs
+renameScopeMap :: (a -> RenM b) -> [(Id, a)] -> RenM [(Unique, b)]
+renameScopeMap f bs = scopeForBindings (map fst bs) $ mapM f' bs
   where
     f' (id, val) = (,) <$> findInScope id <*> f val
-    g = fmap M.fromList . mapM f' . M.toList
 
 renameExpr :: Expr Id -> RenM (Expr Unique)
 renameExpr (EFun ps b) =
@@ -48,7 +47,6 @@ renameExpr (ERef qual) = ERef <$> renameQual qual
 renameExpr (EApp fn args) = EApp <$> renameExpr fn <*> mapM renameExpr args
 renameExpr (ELit lit) = pure $ ELit lit
 renameExpr (EPrim prim) = pure $ EPrim prim
-renameExpr (EParseError msg) = pure $ EParseError msg
 
 renameDecl :: Decl Id -> RenM (Decl Unique)
 renameDecl (DVal b) = DVal <$> renameBoundExpr b

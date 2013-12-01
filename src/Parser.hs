@@ -1,7 +1,6 @@
 
 module Parser where
 
-import qualified Data.Map as M
 import Data.String
 import qualified Data.Text as T
 import H.Common
@@ -34,11 +33,11 @@ ident :: AParser Id
 ident = label "ident" $ Id . snd <$> anyIdentifier
 
 file :: AParser (Namespace Id)
-file = label "file" $ uncurry M.singleton <$> withAccess fileNamespace
+file = label "file" $ (: []) <$> withAccess fileNamespace
 
 namespace
   :: AParser Id
-  -> AParser (Map Id (Access, Decl Id))
+  -> AParser [(Id, (Access, Decl Id))]
   -> AParser (Id, Decl Id)
 namespace pHeader pBody = f <$> pHeader <*> pBody
   where
@@ -53,8 +52,8 @@ nestedNamespace = label "decl-ns" $ namespace nsHeader $ delimit "{" "}" nsBody
 nsHeader :: AParser Id
 nsHeader = kw "ns" *> ident
 
-nsBody :: AParser (Map Id (Access, Decl Id))
-nsBody = M.fromList <$> many decl
+nsBody :: AParser [(Id, (Access, Decl Id))]
+nsBody = many decl
 
 withAccess :: AParser (a, b) -> AParser (a, (Access, b))
 withAccess p = f <$> accessMode <*> p
@@ -67,8 +66,8 @@ decl = label "decl" $ withAccess $ nestedNamespace <|> declType <|> declVal
 declType :: AParser (Id, Decl Id)
 declType = label "decl-type" $ (,) <$> (kw "type" *> ident) <*> (DType <$> tyBody)
 
-tyBody :: AParser (Map Id (Access, BoundExpr Id))
-tyBody = M.fromList <$> delimit "{" "}" (many $ withAccess boundExpr)
+tyBody :: AParser [(Id, (Access, BoundExpr Id))]
+tyBody = delimit "{" "}" . many . withAccess $ boundExpr
 
 declVal :: AParser (Id, Decl Id)
 declVal = label "decl-val" $ f <$> boundExpr
@@ -141,8 +140,8 @@ exprRef = f <$> qual <*> optional fnArgs
 exprRec :: AParser (Expr Id)
 exprRec = label "rec" $ ERec <$> recBody
 
-recBody :: AParser (Map Id (Expr Id))
-recBody = M.fromList <$> delimit "{" "}" (many $ recBind)
+recBody :: AParser [(Id, (Expr Id))]
+recBody = delimit "{" "}" . many $ recBind
 
 recBind :: AParser (Id, Expr Id)
 recBind = (,) <$> ident <*> (kw "=" *> expr <* kw ";")

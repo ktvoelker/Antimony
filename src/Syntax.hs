@@ -20,7 +20,7 @@ data Access = Private | Public | Extern deriving (Eq, Ord, Enum, Bounded, Show)
 
 type Namespace a = DeclMap a Decl
 
-type DeclMap a d = Map a (Access, d a)
+type DeclMap a d = [(a, (Access, d a))]
 
 data BoundExpr a = BoundExpr (Type a) (Maybe (Expr a))
   deriving (Eq, Show)
@@ -37,7 +37,6 @@ data Expr a =
   | ERef  (Qual a)
   | EPrim PrimOp
   | EApp  (Expr a) [Expr a]
-  | ERec  (Map a (Expr a))
-  | EParseError Text
+  | ERec  [(a, (Expr a))]
   deriving (Eq, Show)
 

@@ -2,11 +2,7 @@
 TODO
 ====
 
-Write the sorter
-
 Write the checker
 
-Write the compiler (produce an intermediate format)
-
-Write the linker
+Figure out how to structure the code-generation and linking phases
 
