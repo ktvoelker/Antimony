@@ -2,10 +2,6 @@
 TODO
 ====
 
-Figure out the right representation for primitive types
-
-  There are two kinds: atomic primitive types, and compound primitives (like files)
-
 Don't let prim names appear in binding positions in the parser
 
 Write the checker

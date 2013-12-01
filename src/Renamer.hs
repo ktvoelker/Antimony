@@ -15,7 +15,7 @@ renamePhase :: FileMap (Namespace Id) -> M (Namespace Unique)
 renamePhase = stage ARename . runScopeT . renameFiles
 
 renameFiles :: FileMap (Namespace Id) -> RenM (Namespace Unique)
-renameFiles = M.elems >>> mergeNamespaces >=> addPrimOps >>> renameNamespace
+renameFiles = M.elems >>> mergeNamespaces >=> addPrimitives >>> renameNamespace
 
 mergeNamespaces :: [Namespace Id] -> RenM (Namespace Id)
 mergeNamespaces = liftM M.toList . foldM (unionWithM merge) M.empty . map M.fromList
@@ -56,6 +56,7 @@ renameDecl :: Decl Id -> RenM (Decl Unique)
 renameDecl (DVal b) = DVal <$> renameBoundExpr b
 renameDecl (DType bs) = DType <$> renameScopeMap (onSndF renameBoundExpr) bs
 renameDecl (DNamespace ds) = DNamespace <$> renameNamespace ds
+renameDecl (DPrim id) = pure $ DPrim id
 
 renameType :: Type Id -> RenM (Type Unique)
 renameType (TFun ps r) = TFun <$> mapM renameType ps <*> renameType r

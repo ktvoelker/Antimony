@@ -40,6 +40,7 @@ sortDecl :: Decl Unique -> SortM (Decl Unique)
 sortDecl (DNamespace ns) = DNamespace <$> sortNamespace ns
 sortDecl (DType bs) = DType <$> sortScopeMap (onSndF sortBoundExpr) bs
 sortDecl (DVal be) = DVal <$> sortBoundExpr be
+sortDecl d@(DPrim _) = pure d
 
 sortBoundExpr :: BoundExpr Unique -> SortM (BoundExpr Unique)
 sortBoundExpr (BoundExpr ty val) =

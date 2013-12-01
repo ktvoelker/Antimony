@@ -27,6 +27,7 @@ data Decl a =
     DNamespace (Namespace a)
   | DType (DeclMap a BoundExpr)
   | DVal (BoundExpr a)
+  | DPrim PrimId
   deriving (Eq, Show)
 
 data Expr a =
