@@ -2,8 +2,6 @@
 TODO
 ====
 
-Don't let prim names appear in binding positions in the parser
-
 Write the checker
 
 Figure out how to structure the code-generation and linking phases

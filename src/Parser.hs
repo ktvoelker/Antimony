@@ -36,6 +36,9 @@ ident = label "ident" $ f <$> anyIdentifier
     f (AIdPrim, xs) = Prim . primId . T.tail $ xs
     f (AIdUser, xs) = Id xs
 
+userIdent :: AParser Id
+userIdent = label "user-ident" $ Id <$> identifier AIdUser
+
 file :: AParser (Namespace Id)
 file = label "file" $ (: []) <$> withAccess fileNamespace
 
@@ -54,7 +57,7 @@ nestedNamespace :: AParser (Id, Decl Id)
 nestedNamespace = label "decl-ns" $ namespace nsHeader $ delimit "{" "}" nsBody
 
 nsHeader :: AParser Id
-nsHeader = kw "ns" *> ident
+nsHeader = kw "ns" *> userIdent
 
 nsBody :: AParser [(Id, (Access, Decl Id))]
 nsBody = many decl
@@ -68,7 +71,7 @@ decl :: AParser (Id, (Access, Decl Id))
 decl = label "decl" $ withAccess $ nestedNamespace <|> declType <|> declVal
 
 declType :: AParser (Id, Decl Id)
-declType = label "decl-type" $ (,) <$> (kw "type" *> ident) <*> (DType <$> tyBody)
+declType = label "decl-type" $ (,) <$> (kw "type" *> userIdent) <*> (DType <$> tyBody)
 
 tyBody :: AParser [(Id, (Access, BoundExpr Id))]
 tyBody = delimit "{" "}" . many . withAccess $ boundExpr
@@ -84,7 +87,7 @@ boundExpr = label "bound-expr" $ f <$> valBinding
     f (id, (ty, exp)) = (id, BoundExpr ty exp)
 
 valBinding :: AParser (Id, (Type Id, Maybe (Expr Id)))
-valBinding = f <$> ident <*> (fnWithType <|> constWithType)
+valBinding = f <$> userIdent <*> (fnWithType <|> constWithType)
   where
     f id te = (id, te)
 
@@ -97,7 +100,7 @@ fnParams :: AParser ([Id], [Type Id])
 fnParams = unzip <$> delimit "(" ")" (fnParam `sepBy` kw ",")
 
 fnParam :: AParser (Id, Type Id)
-fnParam = label "param" $ (,) <$> ident <*> (kw "::" *> typ)
+fnParam = label "param" $ (,) <$> userIdent <*> (kw "::" *> typ)
 
 constWithType :: AParser (Type Id, Maybe (Expr Id))
 constWithType = (,) <$> (kw "::" *> typ) <*> ((Just <$> exprBody) <|> emptyBody)
@@ -148,7 +151,7 @@ recBody :: AParser [(Id, (Expr Id))]
 recBody = delimit "{" "}" . many $ recBind
 
 recBind :: AParser (Id, Expr Id)
-recBind = (,) <$> ident <*> (kw "=" *> expr <* kw ";")
+recBind = (,) <$> userIdent <*> (kw "=" *> expr <* kw ";")
 
 fnArgs :: AParser [Expr Id]
 fnArgs = delimit "(" ")" $ expr `sepBy` kw ","
