@@ -7,8 +7,8 @@ import Monad
 import Syntax
 
 checkPhase :: Namespace Unique -> M (Namespace Unique)
-checkPhase b = stage ACheck $ check b *> pure b
+checkPhase b = stage ACheck $ checkNamespace b *> pure b
 
-check :: Namespace Unique -> M ()
-check = undefined
+checkNamespace :: Namespace Unique -> M ()
+checkNamespace = undefined
 

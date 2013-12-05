@@ -17,6 +17,7 @@ data APhases =
   | AParse
   | ARename
   | ASort
+  | ADeref
   | ACheck
   deriving (Eq, Ord, Enum, Bounded)
 
@@ -26,6 +27,7 @@ instance Show APhases where
     AParse  -> "parse"
     ARename -> "rename"
     ASort   -> "sort"
+    ADeref  -> "deref"
     ACheck  -> "check"
 
 instance StageNames APhases where

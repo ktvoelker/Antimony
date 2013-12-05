@@ -7,6 +7,7 @@ import System.Console.CmdTheLine
 import Text.Parsec.Applicative.BNF
 
 import Checker
+import Derefer
 import Lexer
 import Monad
 import Parser
@@ -19,6 +20,7 @@ phases =
   >=> parsePhase
   >=> renamePhase
   >=> sortPhase
+  >=> derefPhase
   >=> checkPhase
   >=> const (return ())
 

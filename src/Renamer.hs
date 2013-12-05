@@ -51,6 +51,7 @@ renameExpr (ERef qual) = ERef <$> renameQual qual
 renameExpr (EApp fn args) = EApp <$> renameExpr fn <*> mapM renameExpr args
 renameExpr (ELit lit) = pure $ ELit lit
 renameExpr (EPrim id) = pure $ EPrim id
+renameExpr (EGet _ _) = impossible "EGet in renameExpr"
 
 renameDecl :: Decl Id -> RenM (Decl Unique)
 renameDecl (DVal b) = DVal <$> renameBoundExpr b

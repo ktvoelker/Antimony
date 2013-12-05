@@ -60,4 +60,5 @@ sortExpr (EFun ps body) = EFun ps <$> sortExpr body
 sortExpr (EApp fn args) = EApp <$> sortExpr fn <*> mapM sortExpr args
 sortExpr e@(ELit _) = pure e
 sortExpr e@(EPrim _) = pure e
+sortExpr (EGet _ _) = impossible "EGet in sortExpr"
 

@@ -2,6 +2,13 @@
 TODO
 ====
 
+Implement the derefer
+
+  Refs into namespaces should turn into uniques
+
+  Refs into records should turn into a new kind of ref that is just a pair of uniques:
+    the unique for the record, and the unique for the field's definition
+
 Write the checker
 
 Figure out how to structure the code-generation and linking phases
