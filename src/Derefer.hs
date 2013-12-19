@@ -6,17 +6,28 @@ import H.Common
 import Monad
 import Syntax
 
-data EnvElem = EnvNamespace Unique | EnvType Unique
+data EnvElem = EnvNamespace Unique | EnvOther
 
-type Env = Map Unique (Map Text EnvElem)
+type Env = [(Unique, [(Text, EnvElem)])]
 
-makeEnv :: Namespace Unique -> Env
-makeEnv = undefined
+makeEnv :: DeclMapElem Unique Decl -> Env
+makeEnv = uncurry makeEnvDecl . onSnd snd
+
+makeEnvDecl :: Unique -> Decl Unique -> Env
+makeEnvDecl u (DNamespace ds) = return (u, map makeEnvElem ds) <> (ds >>= makeEnv)
+makeEnvDecl _ (DType _) = mempty
+makeEnvDecl _ (DVal _) = mempty
+makeEnvDecl _ (DPrim _) = mempty
+
+makeEnvElem :: DeclMapElem Unique Decl -> (Text, EnvElem)
+makeEnvElem (u, (_, d)) = (uniqueSourceName u,) $ case d of
+  DNamespace _ -> EnvNamespace u
+  _ -> EnvOther
 
 type DerM = ReaderT Env M
 
 runDerM :: Namespace Unique -> DerM a -> M a
-runDerM = flip runReaderT . makeEnv
+runDerM = flip runReaderT . (>>= makeEnv)
 
 derefPhase :: Namespace Unique -> M (Namespace Unique)
 derefPhase ns = stage ADeref . runDerM ns $ derefNamespace ns
@@ -54,5 +65,13 @@ derefExpr (EGet _ _) = impossible "EGet in derefExpr"
 derefExpr e@(EPrim _) = pure e
 
 derefQual :: Qual Unique -> DerM (Qual Unique)
-derefQual = undefined
+derefQual (Qual u fs) = go u fs
+  where
+    go u [] = return $ Qual u []
+    go u fs@(f : fs') = asks (lookup u) >>= \case
+      Nothing -> impossible $ "Lookup failed in derefQual: " ++ show (u, fs)
+      Just ds -> case lookup f ds of
+        Nothing -> fatal $ Err (ECustom EDeref) Nothing Nothing Nothing
+        Just (EnvNamespace u') -> go u' fs'
+        Just EnvOther -> return $ Qual u fs
 

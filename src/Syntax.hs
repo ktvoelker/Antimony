@@ -18,7 +18,9 @@ data Access = Private | Public | Extern deriving (Eq, Ord, Enum, Bounded, Show)
 
 type Namespace a = DeclMap a Decl
 
-type DeclMap a d = [(a, (Access, d a))]
+type DeclMapElem a d = (a, (Access, d a))
+
+type DeclMap a d = [DeclMapElem a d]
 
 data BoundExpr a = BoundExpr (Type a) (Maybe (Expr a))
   deriving (Eq, Show)

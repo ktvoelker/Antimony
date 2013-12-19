@@ -8,6 +8,7 @@ data AErrType =
   | EMergeAccess
   | EUnbound
   | ECircRef
+  | EDeref
   deriving (Eq, Ord, Enum, Bounded, Read, Show)
 
 type AErr = Err AErrType
