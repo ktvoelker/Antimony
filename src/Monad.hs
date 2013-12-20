@@ -9,6 +9,8 @@ data AErrType =
   | EUnbound
   | ECircRef
   | EDeref
+  | EType
+  | EKind
   deriving (Eq, Ord, Enum, Bounded, Read, Show)
 
 type AErr = Err AErrType

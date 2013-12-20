@@ -15,11 +15,15 @@ primConcat = primId "concat"
 
 primStr = primId "str"
 
+primInt = primId "int"
+
+primBool = primId "bool"
+
 primOps :: [(PrimId, Type PrimId)]
 primOps = [(primConcat, primFun [primStr, primStr] primStr)]
 
 primLiterals :: [PrimId]
-primLiterals = [primStr]
+primLiterals = [primStr, primInt, primBool]
 
 primResources :: [(PrimId, [(Text, PrimId)])]
 primResources = []
@@ -39,4 +43,9 @@ addPrimitives = (primOps' ++) . (primLiterals' ++) . (primResources' ++)
       map (\(id, as) -> (Prim id, (Public, DType . map g $ as))) primResources
     g (name, ty) =
       (Id name, (Public, BoundExpr (liftPrimType $ primTypeRef ty) Nothing))
+
+litMatchesPrim :: Lit -> Unique -> Bool
+litMatchesPrim (LitStr _)  = (== primUnique primStr)
+litMatchesPrim (LitInt _)  = (== primUnique primInt)
+litMatchesPrim (LitBool _) = (== primUnique primBool)
 

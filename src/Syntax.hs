@@ -26,10 +26,10 @@ data BoundExpr a = BoundExpr (Type a) (Maybe (Expr a))
   deriving (Eq, Show)
 
 data Decl a =
-    DNamespace (Namespace a)
-  | DType (DeclMap a BoundExpr)
-  | DVal (BoundExpr a)
-  | DPrim PrimId
+    DNamespace (Namespace a)     -- ^ A namespace
+  | DType (DeclMap a BoundExpr)  -- ^ A record type
+  | DVal (BoundExpr a)           -- ^ A value binding
+  | DPrim PrimId                 -- ^ A primitive type
   deriving (Eq, Show)
 
 data Expr a =
