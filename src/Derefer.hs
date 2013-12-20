@@ -6,9 +6,7 @@ import H.Common
 import Monad
 import Syntax
 
-data EnvElem = EnvNamespace Unique | EnvOther
-
-type Env = [(Unique, [(Text, EnvElem)])]
+type Env = [(Unique, [(Text, Unique)])]
 
 makeEnv :: DeclMapElem Unique Decl -> Env
 makeEnv = uncurry makeEnvDecl . onSnd snd
@@ -19,10 +17,8 @@ makeEnvDecl _ (DType _) = mempty
 makeEnvDecl _ (DVal _) = mempty
 makeEnvDecl _ (DPrim _) = mempty
 
-makeEnvElem :: DeclMapElem Unique Decl -> (Text, EnvElem)
-makeEnvElem (u, (_, d)) = (uniqueSourceName u,) $ case d of
-  DNamespace _ -> EnvNamespace u
-  _ -> EnvOther
+makeEnvElem :: DeclMapElem Unique Decl -> (Text, Unique)
+makeEnvElem (u, _) = (uniqueSourceName u, u)
 
 type DerM = ReaderT Env M
 
@@ -68,10 +64,9 @@ derefQual :: Qual Unique -> DerM (Qual Unique)
 derefQual (Qual u fs) = go u fs
   where
     go u [] = return $ Qual u []
-    go u fs@(f : fs') = asks (lookup u) >>= \case
-      Nothing -> impossible $ "Lookup failed in derefQual: " ++ show (u, fs)
+    go u (f : fs) = asks (lookup u) >>= \case
+      Nothing -> fatal $ Err (ECustom EDeref) Nothing Nothing Nothing
       Just ds -> case lookup f ds of
-        Nothing -> fatal $ Err (ECustom EDeref) Nothing Nothing Nothing
-        Just (EnvNamespace u') -> go u' fs'
-        Just EnvOther -> return $ Qual u fs
+        Nothing -> fatal $ Err (ECustom EUnbound) Nothing Nothing Nothing
+        Just u' -> go u' fs
 

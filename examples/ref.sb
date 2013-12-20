@@ -1,0 +1,11 @@
+
+ns foo;
+
+ns bar {
+  x :: #str = "bar";
+}
+
+ns baz {
+  y :: #str = bar.x;
+}
+

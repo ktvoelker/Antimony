@@ -2,8 +2,6 @@
 TODO
 ====
 
-Test the derefer
-
 Write the checker
 
 Figure out how to structure the code-generation and linking phases
