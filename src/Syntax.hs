@@ -38,7 +38,6 @@ data Expr a =
   | ERef  (Qual a)
   | EApp  (Expr a) [Expr a]
   | ERec  [(a, (Expr a))]
-  | EGet  a Text
   | EPrim PrimId
   deriving (Eq, Show)
 

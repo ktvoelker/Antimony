@@ -13,7 +13,6 @@ type Env = [(Unique, EnvElem)]
 
 type ChkM = ReaderT Env M
 
--- TODO add EnvValue entries for all function parameters
 makeEnv :: Namespace Unique -> Env
 makeEnv = (>>= f)
   where
@@ -54,10 +53,12 @@ match (ELit _) _ = err EKind
 match (EFun ps body) (TFun pTys bodyTy) =
   equate (length ps) (length pTys)
   >> match body bodyTy
+match (EFun _ _) (TRef _) = err EKind
 match (ERef (Qual u [])) ty = asks (lookup u) >>= \case
   Nothing -> err EKind
   Just (EnvType _) -> err EKind
   Just (EnvValue refTy) -> equate refTy ty
+match (ERef _) _ = err EKind
 match (EApp (ERef (Qual u [])) args) ty = asks (lookup u) >>= \case
   Nothing -> err EKind
   Just (EnvType _) -> err EKind
@@ -68,4 +69,19 @@ match (EApp (ERef (Qual u [])) args) ty = asks (lookup u) >>= \case
   Just (EnvValue _) -> err EType
 match (EApp (ERef _) _) _ = err EKind
 match (EApp _ _) _ = impossible "Application of a non-reference"
+match (ERec fs) (TRef (Qual u [])) = asks (lookup u) >>= \case
+  Nothing -> err EKind
+  Just (EnvValue _) -> err EKind
+  Just (EnvType ts) -> matchRec fs ts
+match (ERec _) _ = err EKind
+match (EPrim id) ty = case lookup id primOps of
+  Nothing -> impossible "Invalid primitive identifier"
+  Just ty' -> equate (liftPrimTypeUnique ty') ty
+
+matchRec :: [(Unique, Expr Unique)] -> [(Text, Type Unique)] -> ChkM ()
+matchRec fs ts = equate fNames tNames >> mapM_ (uncurry match) (zip fExprs tTypes)
+  where
+    s = unzip . sortBy (compare `on` fst)
+    (fNames, fExprs) = s . map (onFst uniqueSourceName) $ fs
+    (tNames, tTypes) = s ts
 

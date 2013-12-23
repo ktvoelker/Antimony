@@ -2,7 +2,11 @@
 TODO
 ====
 
-Write the checker
+Finish the checker
+
+  Add EnvValue entries for all function parameters
+
+Test the checker
 
 Figure out where to put code to check access rules
 
