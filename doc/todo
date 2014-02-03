@@ -2,9 +2,9 @@
 TODO
 ====
 
-Finish the checker
+Change EFun to embed parameter types with the parameter names
 
-  Add EnvValue entries for all function parameters
+  Then implement the todo in Checker.makeEnv
 
 Test the checker
 

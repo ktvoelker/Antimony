@@ -18,10 +18,18 @@ makeEnv = (>>= f)
   where
     f (u, (_, d)) = case d of
       DNamespace ds -> makeEnv ds
-      DType fs -> return (u, EnvType $ map g fs)
-      DVal (BoundExpr ty _) -> return (u, EnvValue ty)
+      DType fs -> (u, EnvType $ map g fs) : (fs >>= h . boundExprValue . snd . snd)
+      DVal (BoundExpr ty expr) -> (u, EnvValue ty) : h expr
       DPrim _ -> mempty
     g (u, (_, BoundExpr ty _)) = (uniqueSourceName u, ty)
+    h :: Maybe (Expr Unique) -> Env
+    h = maybe mempty $ \case
+      ELit _       -> mempty
+      EFun ps e    -> map (\p -> (p, EnvValue todo)) ps `mplus` h (Just e)
+      ERef _       -> mempty
+      EApp fn args -> h (Just fn) `mplus` (args >>= h . Just)
+      ERec bs      -> bs >>= h . Just . snd
+      EPrim _      -> mempty
 
 checkPhase :: Namespace Unique -> M (Namespace Unique)
 checkPhase b = stage ACheck . flip runReaderT (makeEnv b) . checkNamespace $ b

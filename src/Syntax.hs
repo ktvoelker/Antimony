@@ -22,8 +22,11 @@ type DeclMapElem a d = (a, (Access, d a))
 
 type DeclMap a d = [DeclMapElem a d]
 
-data BoundExpr a = BoundExpr (Type a) (Maybe (Expr a))
-  deriving (Eq, Show)
+data BoundExpr a =
+  BoundExpr
+  { boundExprType  :: Type a
+  , boundExprValue :: Maybe (Expr a)
+  } deriving (Eq, Show)
 
 data Decl a =
     DNamespace (Namespace a)     -- ^ A namespace
