@@ -2,10 +2,6 @@
 TODO
 ====
 
-Change EFun to embed parameter types with the parameter names
-
-  Then implement the todo in Checker.makeEnv
-
 Test the checker
 
 Figure out where to put code to check access rules
