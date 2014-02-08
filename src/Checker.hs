@@ -7,6 +7,8 @@ import Monad
 import Prim
 import Syntax
 
+import Prelude (putStrLn)
+
 data EnvElem = EnvType [(Text, Type Unique)] | EnvValue (Type Unique) deriving (Show)
 
 type Env = [(Unique, EnvElem)]
@@ -30,7 +32,9 @@ checkPhase :: Namespace Unique -> M (Namespace Unique)
 checkPhase b = stage ACheck . flip runReaderT (makeEnv b) . checkNamespace $ b
 
 checkNamespace :: Namespace Unique -> ChkM (Namespace Unique)
-checkNamespace = mapM . onSndF . onSndF $ checkDecl
+checkNamespace ns = do
+  log "checkNamespace"
+  (mapM . onSndF . onSndF $ checkDecl) ns
 
 checkDecl :: Decl Unique -> ChkM (Decl Unique)
 checkDecl (DNamespace ds) = DNamespace <$> checkNamespace ds

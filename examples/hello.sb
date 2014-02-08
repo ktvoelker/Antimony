@@ -1,19 +1,19 @@
 
 ns hello;
 
-hello :: str = "Hello, world!";
+hello :: #str = "Hello, world!";
 
 ns nested {
-  hello_again :: str = "{hello} {foo(hello)}";
+  hello_again :: #str = "{hello} {foo(hello)}";
 }
 
-foo(input :: str) :: str = input;
+foo(input :: #str) :: #str = input;
 
-public myNum :: int = 42;
+public myNum :: #int = 42;
 
-myBool :: bool = or(false, true);
+myBool :: #bool = #or(false, true);
 
-myNeg :: int = -42;
+myNeg :: #int = -42;
 
-extern myFoo :: int;
+extern myFoo :: #int;
 

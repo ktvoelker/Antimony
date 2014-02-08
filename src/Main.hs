@@ -29,7 +29,7 @@ phaseCmd =
   phasedCommand
   $ PhasedCommandOptions
     { oPipeline = phases
-    , oRunMonad = return . runIdentity
+    , oRunMonad = id
     , oDefault  = ASort
     , oCommand  = "compile"
     , oDoc      = "Compile the input files"

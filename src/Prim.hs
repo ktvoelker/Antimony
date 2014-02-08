@@ -13,6 +13,8 @@ primFun as = TFun (map primTypeRef as) . primTypeRef
 
 primConcat = primId "concat"
 
+primOr = primId "or"
+
 primStr = primId "str"
 
 primInt = primId "int"
@@ -20,7 +22,10 @@ primInt = primId "int"
 primBool = primId "bool"
 
 primOps :: [(PrimId, Type PrimId)]
-primOps = [(primConcat, primFun [primStr, primStr] primStr)]
+primOps =
+  [ (primConcat, primFun [primStr, primStr] primStr)
+  , (primOr, primFun [primBool, primBool] primBool)
+  ]
 
 primLiterals :: [PrimId]
 primLiterals = [primStr, primInt, primBool]
