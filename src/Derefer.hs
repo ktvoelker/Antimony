@@ -26,7 +26,7 @@ runDerM :: Namespace Unique -> DerM a -> M a
 runDerM = flip runReaderT . (>>= makeEnv)
 
 derefPhase :: Namespace Unique -> M (Namespace Unique)
-derefPhase ns = stage ADeref . runDerM ns $ derefNamespace ns
+derefPhase ns = checked . runDerM ns $ derefNamespace ns
 
 derefNamespace :: Namespace Unique -> DerM (Namespace Unique)
 derefNamespace = derefDeclMap derefDecl

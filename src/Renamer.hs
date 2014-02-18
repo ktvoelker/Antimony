@@ -3,7 +3,7 @@ module Renamer (renamePhase) where
 
 import qualified Data.Map as M
 import H.Common
-import H.Monad.Scope
+import H.Scope
 
 import Monad
 import Prim
@@ -12,7 +12,7 @@ import Syntax
 type RenM = ScopeT Id Unique M
 
 renamePhase :: FileMap (Namespace Id) -> M (Namespace Unique)
-renamePhase = stage ARename . runScopeT . renameFiles
+renamePhase = checked . runScopeT . renameFiles
 
 renameFiles :: FileMap (Namespace Id) -> RenM (Namespace Unique)
 renameFiles = M.elems >>> mergeNamespaces >=> addPrimitives >>> renameNamespace

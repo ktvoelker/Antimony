@@ -2,7 +2,7 @@
 module Sorter where
 
 import H.Common
-import qualified H.Monad.RefGraph as RG
+import qualified H.RefGraph as RG
 
 import Monad
 import Syntax
@@ -11,7 +11,7 @@ type SortM = ReaderT [Unique] (RG.RefGraphT Unique M)
 
 sortPhase :: Namespace Unique -> M (Namespace Unique)
 sortPhase =
-  stage ASort . liftM fst . RG.runRefGraphT . flip runReaderT [] . sortNamespace
+  checked . liftM fst . RG.runRefGraphT . flip runReaderT [] . sortNamespace
 
 sortNamespace :: Namespace Unique -> SortM (Namespace Unique)
 sortNamespace = sortScopeMap $ onSndF sortDecl

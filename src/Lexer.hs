@@ -16,7 +16,7 @@ type AToken = Token AIdClass
 type ATokens = Tokens AIdClass
 
 lexPhase :: FileMap Text -> M (FileMap ATokens)
-lexPhase = stage ALex . tokenize aLexerSpec
+lexPhase = checked . tokenize aLexerSpec
 
 primPrefixChars :: Set Char
 primPrefixChars = S.singleton '#'

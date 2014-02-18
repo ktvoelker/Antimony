@@ -1,10 +1,9 @@
 
 module Main where
 
+import Data.String
 import H.Common
-import H.Phase
-import System.Console.CmdTheLine
-import Text.Parsec.Applicative.BNF
+import H.Common.IO
 
 import Checker
 import Derefer
@@ -24,32 +23,6 @@ phases =
   >=> checkPhase
   >=> const (return ())
 
-phaseCmd :: Command
-phaseCmd =
-  phasedCommand
-  $ PhasedCommandOptions
-    { oPipeline = phases
-    , oRunMonad = id
-    , oDefault  = ASort
-    , oCommand  = "compile"
-    , oDoc      = "Compile the input files"
-    }
-
-bnfCmd :: Command
-bnfCmd = (term, info)
-  where
-    term = pure . print . parserToBNF $ file
-    info = defTI
-      { termName = "grammar"
-      , termDoc = "Show the grammar"
-      }
-
 main :: IO ()
-main =
-  commandMain
-  $ MainOptions
-    { oName     = "antimony"
-    , oVersion  = "0.0.1"
-    , oCommands = [bnfCmd, phaseCmd]
-    }
+main = runMT $ liftIO ((map fromString <$> getArgs) >>= readFiles) >>= phases
 

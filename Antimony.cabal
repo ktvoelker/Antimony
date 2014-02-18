@@ -34,11 +34,11 @@ Executable antimony
     containers           >= 0.4  && < 0.6,
     text                 >= 0.11 && < 0.12,
     mtl                  >= 2.1  && < 2.2,
-    transformers,
+    transformers         >= 0.3  && < 0.4,
     data-lens            >= 2.10 && < 2.11,
     data-lens-fd         >= 2.0  && < 2.1,
     data-lens-template   >= 2.1  && < 2.2,
-    cmdtheline           >= 0.2  && < 0.3,
+    system-filepath      >= 0.4  && < 0.5,
     Hydrogen,
     applicative-parsec
   default-extensions:

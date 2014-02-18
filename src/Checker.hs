@@ -29,7 +29,7 @@ makeEnv = (>>= f)
     h _ _ = mempty
 
 checkPhase :: Namespace Unique -> M (Namespace Unique)
-checkPhase b = stage ACheck . flip runReaderT (makeEnv b) . checkNamespace $ b
+checkPhase b = checked . flip runReaderT (makeEnv b) . checkNamespace $ b
 
 checkNamespace :: Namespace Unique -> ChkM (Namespace Unique)
 checkNamespace ns = do

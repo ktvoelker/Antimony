@@ -23,7 +23,7 @@ instance IsString Sym where
 type AParser = Parser Sym AIdClass
 
 parsePhase :: FileMap ATokens -> M (FileMap (Namespace Id))
-parsePhase = stage AParse . parse file
+parsePhase = checked . parse file
 
 accessMode :: AParser Access
 accessMode =
