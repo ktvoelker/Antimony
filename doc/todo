@@ -2,9 +2,7 @@
 TODO
 ====
 
-Test the checker
+Figure out how to structure the code-generation and linking phases
 
 Figure out where to put code to check access rules
-
-Figure out how to structure the code-generation and linking phases
 

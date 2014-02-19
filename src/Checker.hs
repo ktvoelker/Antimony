@@ -66,6 +66,7 @@ match (ERef (Qual u [])) ty = asks (lookup u) >>= \case
   Just (EnvType _) -> err EKind
   Just (EnvValue refTy) -> equate refTy ty
 match (ERef _) _ = err EKind
+match (EApp (EPrim id) args) ty = match (EApp (primRef id) args) ty
 match (EApp (ERef (Qual u [])) args) ty = asks (lookup u) >>= \case
   Nothing -> err EKind
   Just (EnvType _) -> err EKind

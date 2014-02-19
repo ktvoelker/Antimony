@@ -5,6 +5,9 @@ import H.Common
 
 data Id = Id Text | Prim PrimId deriving (Eq, Ord, Show)
 
+instance FromPrimId Id where
+  fromPrimId = Prim
+
 data Qual a = Qual a [Text] deriving (Eq, Ord, Show)
 
 data Type a =

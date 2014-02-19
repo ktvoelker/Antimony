@@ -41,6 +41,9 @@ liftPrimTypeUnique :: Type PrimId -> Type Unique
 liftPrimTypeUnique (TFun ts t) = TFun (map liftPrimTypeUnique ts) $ liftPrimTypeUnique t
 liftPrimTypeUnique (TRef (Qual id ms)) = TRef (Qual (primUnique id) ms)
 
+primRef :: (FromPrimId a) => PrimId -> Expr a
+primRef = ERef . flip Qual [] . fromPrimId
+
 addPrimitives :: Namespace Id -> Namespace Id
 addPrimitives = (primOps' ++) . (primLiterals' ++) . (primResources' ++)
   where
