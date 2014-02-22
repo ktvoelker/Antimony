@@ -2,7 +2,9 @@
 TODO
 ====
 
-Figure out how to structure the code-generation and linking phases
+Implement the evaluation phase
+
+Add a code-generation phase
 
 Figure out where to put code to check access rules
 

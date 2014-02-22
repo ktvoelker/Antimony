@@ -13,9 +13,9 @@ data Qual a = Qual a [Text] deriving (Eq, Ord, Show)
 data Type a =
     TFun [Type a] (Type a)
   | TRef (Qual a)
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
-data Lit = LitStr Text | LitInt Integer | LitBool Bool deriving (Eq, Show)
+data Lit = LitStr Text | LitInt Integer | LitBool Bool deriving (Eq, Ord, Show)
 
 data Access = Private | Public | Extern deriving (Eq, Ord, Enum, Bounded, Show)
 
@@ -29,14 +29,14 @@ data BoundExpr a =
   BoundExpr
   { boundExprType  :: Type a
   , boundExprValue :: Maybe (Expr a)
-  } deriving (Eq, Show)
+  } deriving (Eq, Ord, Show)
 
 data Decl a =
     DNamespace (Namespace a)     -- ^ A namespace
   | DType (DeclMap a BoundExpr)  -- ^ A record type
   | DVal (BoundExpr a)           -- ^ A value binding
   | DPrim PrimId                 -- ^ A primitive type
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
 data Expr a =
     ELit  Lit
@@ -45,5 +45,5 @@ data Expr a =
   | EApp  (Expr a) [Expr a]
   | ERec  [(a, (Expr a))]
   | EPrim PrimId
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
