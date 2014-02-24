@@ -6,6 +6,8 @@ Implement the evaluation phase
 
   Note that we don't need graph analysis because the sort phase already did that
 
+  It should be possible to remove makeEnv and start with an empty Env
+
 Add a code-generation phase
 
 Figure out where to put code to check access rules
