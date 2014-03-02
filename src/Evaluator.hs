@@ -4,6 +4,7 @@ module Evaluator where
 import H.Common
 
 import Monad
+import Prim
 import Resource
 import Syntax
 
@@ -51,26 +52,36 @@ getValue u = get >>= maybe (impossible "Name not found in getValue") f . lookup 
     f (EnvValue Nothing) = impossible "Abstract value found in getValue"
     f (EnvValue (Just e)) = return e
 
+localState :: Env -> EvalM a -> EvalM a
+localState inner m = do
+  outer <- get
+  put $ inner ++ outer
+  ret <- m
+  put outer
+  return ret
+
 evalExpr :: Expr Unique -> EvalM (Expr Unique)
 evalExpr e@(ELit _) = return e
 evalExpr e@(EFun _ _) = return e
 evalExpr (ERef (Qual u fs)) = getValue u >>= flip (foldM lookupField) fs
 evalExpr (EApp fn args) =
   evalExpr fn >>= \case
-    EFun ps body -> mapM evalExpr args >>= evalExpr . subst body . zip ps
-    EPrim _ -> todo
+    EFun ps body -> do
+      env' <- zip ps . map (EnvValue . Just) <$> mapM evalExpr args
+      localState env' $ evalExpr body
+    EPrim id -> evalPrim id <$> mapM evalExpr args
     _ -> impossible "Application of a non-function"
 evalExpr (ERec fs) = ERec <$> f (unzip fs)
   where
     f (names, values) = zip names <$> mapM evalExpr values
 evalExpr e@(EPrim _) = return e
 
-subst :: Expr Unique -> [(Unique, Expr Unique)] -> Expr Unique
-subst = todo
-
 lookupField :: Expr Unique -> Text -> EvalM (Expr Unique)
 lookupField (ERec fs) f =
-  maybe todo return . lookup f . map (onFst uniqueSourceName) $ fs
+  maybe (impossible "Field lookup failed") return
+  . lookup f
+  . map (onFst uniqueSourceName)
+  $ fs
 lookupField _ _ = impossible "Field lookup from a non-record"
 
 exprResources :: Expr Unique -> [Resource]

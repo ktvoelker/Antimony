@@ -4,9 +4,9 @@ TODO
 
 Implement the evaluation phase
 
-  Note that we don't need graph analysis because the sort phase already did that
-
   It should be possible to remove makeEnv and start with an empty Env
+
+  It would also be nice to turn the State into a Reader
 
 Add a code-generation phase
 
