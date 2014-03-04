@@ -2,11 +2,34 @@
 TODO
 ====
 
-Implement the evaluation phase
+Take the conversion to Resources out of the evaluation phase
 
-  It should be possible to remove makeEnv and start with an empty Env
+  It should instead be an operation on the heap
 
-  It would also be nice to turn the State into a Reader
+  But we need to know where in the heap to start
+
+    Look for a top-level symbol named "main" and start there
+
+Add support for collections (lists, sets, and dictionaries, probably)
+
+  Make sure the available operations don't allow unbounded collections
+
+Add support for infix operators for primitive types
+
+Perhaps a primitive type for file paths would be useful
+
+  But then why not also for uris, IPv4 and v6, MAC addresses, et cetera? Sure.
+    
+    And hostnames.
+
+Why do we have the declaration structure of the program as a tree, even after the
+sort phase? It could just as well be the topo-sorted list of bindings that shows up
+in the various Env types.
+
+Fix default values in types - they are supposed to be able to refer to abstract
+members of the particular value the default is being used in
+
+  Or just remove the feature for now
 
 Add a code-generation phase
 

@@ -4,31 +4,34 @@ module Evaluator where
 import H.Common
 
 import Monad
-import Prim
+import Prim.Eval
 import Resource
 import Syntax
+import Value
 
-data EnvElem =
-    EnvType [(Text, Maybe (Expr Unique))]
-  | EnvValue (Maybe (Expr Unique))
-  deriving (Show)
-
-type Env = [(Unique, EnvElem)]
+data Env = Env
+  { envBindings :: [(Unique, Val)]
+  , envRecords  :: [(Ptr, [(Text, Val)])]
+  , envNextPtr  :: Ptr
+  } deriving (Eq, Ord, Show)
 
 type EvalM = StateT Env M
 
-makeEnv :: Namespace Unique -> Env
-makeEnv = (>>= f)
-  where
-    f (u, (_, d)) = case d of
-      DNamespace ds -> makeEnv ds
-      DType fs -> return (u, EnvType $ map g fs)
-      DVal (BoundExpr _ expr) -> return (u, EnvValue expr)
-      DPrim _ -> mempty
-    g (u, (_, BoundExpr _ expr)) = (uniqueSourceName u, expr)
+instance MonadHeap EvalM where
+  deref ptr = lookup ptr <$> gets envRecords
+  store rec = do
+    ptr <- nextPtr
+    modify $ \s -> s { envRecords = (ptr, rec) : envRecords s }
+    return ptr
+
+nextPtr :: EvalM Ptr
+nextPtr = do
+  ptr@(Ptr n) <- gets envNextPtr
+  modify $ \s -> s { envNextPtr = Ptr (n + 1) }
+  return ptr
 
 evalPhase :: Namespace Unique -> M [Resource]
-evalPhase ns = evalStateT (evaluate ns) $ makeEnv ns
+evalPhase ns = evalStateT (evaluate ns) $ Env [] [] (Ptr 1)
 
 evaluate :: Namespace Unique -> EvalM [Resource]
 evaluate ns = concat <$> mapM f ns
@@ -41,49 +44,46 @@ evaluate ns = concat <$> mapM f ns
     g (u, (_, be)) = h u be
     h _ (BoundExpr _ Nothing) = return mempty
     h u (BoundExpr _ (Just expr)) = do
-      expr' <- evalExpr expr
-      modify $ ((u, EnvValue . Just $ expr') :)
-      return $ exprResources expr'
+      v <- evalExpr expr
+      modify $ \s -> s { envBindings = (u, v) : envBindings s }
+      valueResources v
 
-getValue :: Unique -> EvalM (Expr Unique)
-getValue u = get >>= maybe (impossible "Name not found in getValue") f . lookup u
-  where
-    f (EnvType _) = impossible "Type found in getValue"
-    f (EnvValue Nothing) = impossible "Abstract value found in getValue"
-    f (EnvValue (Just e)) = return e
+getVal :: Unique -> EvalM Val
+getVal u =
+  gets envBindings
+  >>= maybe (impossible "Name not found in getVal") return . lookup u
 
-localState :: Env -> EvalM a -> EvalM a
-localState inner m = do
-  outer <- get
-  put $ inner ++ outer
+localBindings :: [(Unique, Val)] -> EvalM a -> EvalM a
+localBindings inner m = do
+  outer <- gets envBindings
+  modify $ \s -> s { envBindings = inner ++ outer }
   ret <- m
-  put outer
+  modify $ \s -> s { envBindings = outer }
   return ret
 
-evalExpr :: Expr Unique -> EvalM (Expr Unique)
-evalExpr e@(ELit _) = return e
-evalExpr e@(EFun _ _) = return e
-evalExpr (ERef (Qual u fs)) = getValue u >>= flip (foldM lookupField) fs
+evalExpr :: Expr Unique -> EvalM Val
+evalExpr (ELit lit) = return $ VLit lit
+evalExpr (EFun ps body) = return $ VFun ps body
+evalExpr (EPrim id) = return $ VPrim id
+evalExpr (ERef (Qual u fs)) = getVal u >>= flip (foldM lookupField) fs
 evalExpr (EApp fn args) =
   evalExpr fn >>= \case
-    EFun ps body -> do
-      env' <- zip ps . map (EnvValue . Just) <$> mapM evalExpr args
-      localState env' $ evalExpr body
-    EPrim id -> evalPrim id <$> mapM evalExpr args
+    VFun ps body -> do
+      args' <- zip ps <$> mapM evalExpr args
+      localBindings args' $ evalExpr body
+    VPrim id -> evalPrim id <$> mapM evalExpr args
     _ -> impossible "Application of a non-function"
-evalExpr (ERec fs) = ERec <$> f (unzip fs)
+evalExpr (ERec fs) = VRec <$> (f (unzip fs) >>= store)
   where
-    f (names, values) = zip names <$> mapM evalExpr values
-evalExpr e@(EPrim _) = return e
+    f (names, values) = zip (map uniqueSourceName names) <$> mapM evalExpr values
 
-lookupField :: Expr Unique -> Text -> EvalM (Expr Unique)
-lookupField (ERec fs) f =
-  maybe (impossible "Field lookup failed") return
-  . lookup f
-  . map (onFst uniqueSourceName)
-  $ fs
+lookupField :: Val -> Text -> EvalM Val
+lookupField (VRec ptr) f = do
+  ((lookup ptr >=> lookup f) <$> gets envRecords) >>= \case
+    Nothing -> impossible "Ptr or field lookup failed"
+    Just val -> return val
 lookupField _ _ = impossible "Field lookup from a non-record"
 
-exprResources :: Expr Unique -> [Resource]
-exprResources = todo
+valueResources :: Val -> EvalM [Resource]
+valueResources = todo
 

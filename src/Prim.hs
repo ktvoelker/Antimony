@@ -4,13 +4,13 @@ module Prim
   , primOps
   , primConcat
   , primOr
+  , primAdd
   , liftPrimTypeUnique
   , primRef
   , litMatchesPrim
   , primStr
   , primInt
   , primBool
-  , evalPrim
   ) where
 
 import H.Common
@@ -70,39 +70,4 @@ litMatchesPrim :: Lit -> Unique -> Bool
 litMatchesPrim (LitStr _)  = (== primUnique primStr)
 litMatchesPrim (LitInt _)  = (== primUnique primInt)
 litMatchesPrim (LitBool _) = (== primUnique primBool)
-
-getStr :: Expr a -> Text
-getStr (ELit (LitStr xs)) = xs
-getStr _ = impossible "Unexpected value in getStr"
-
-getInt :: Expr a -> Integer
-getInt (ELit (LitInt n)) = n
-getInt _ = impossible "Unexpected value in getInt"
-
-getBool :: Expr a -> Bool
-getBool (ELit (LitBool n)) = n
-getBool _ = impossible "Unexpected value in getBool"
-
-twoArgs :: (a -> a -> b) -> [a] -> b
-twoArgs f [x, y] = f x y
-twoArgs _ _ = impossible "Wrong number of args in twoArgs"
-
-type PrimOpImpl a = [Expr a] -> Expr a
-
-primOpImpls :: [(PrimId, PrimOpImpl a)]
-primOpImpls =
-  [ (primConcat, implConcat)
-  , (primOr,     implOr)
-  , (primAdd,    implAdd)
-  ]
-
-implConcat, implOr :: PrimOpImpl a
-implConcat = ELit . LitStr . twoArgs (<>) . map getStr
-implOr = ELit . LitBool . twoArgs (||) . map getBool
-implAdd = ELit . LitInt . twoArgs (+) . map getInt
-
-evalPrim :: PrimId -> [Expr a] -> Expr a
-evalPrim id args =
-  maybe (impossible "Missing primOpImpl") ($ args)
-  $ lookup id primOpImpls
 
