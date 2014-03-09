@@ -54,6 +54,7 @@ Executable antimony
     StandaloneDeriving
     LambdaCase
     OverloadedStrings
+    RecordWildCards
   other-extensions:
     TemplateHaskell
 

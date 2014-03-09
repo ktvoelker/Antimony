@@ -7,10 +7,16 @@ import Syntax
 
 newtype Ptr = Ptr Integer deriving (Eq, Ord, Show)
 
-type Rec = [(Text, Val)]
+data Rec =
+  Rec
+  { recType :: Maybe PrimId
+  , recBody :: [(Text, Val)]
+  } deriving (Eq, Ord, Show)
+
+type Heap = [(Ptr, Rec)]
 
 data Val =
-    VRec (Maybe PrimId) Ptr
+    VRec Ptr
   | VLit Lit
   | VFun [Unique] (Expr Unique)
   | VPrim PrimId

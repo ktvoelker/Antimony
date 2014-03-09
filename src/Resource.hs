@@ -11,7 +11,7 @@ import Syntax
 data Resource =
   Resource
   { _rName  :: Qual Text
-  , _rType  :: PrimId
+  , _rType  :: Maybe PrimId
   , _rAttrs :: M.Map Text Lit
   } deriving (Eq, Ord, Show)
 

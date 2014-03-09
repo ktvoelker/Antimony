@@ -2,10 +2,7 @@
 TODO
 ====
 
-Add a new phase for generating Resources from the heap
-
-  Remember, the Resource type only contains literals because it exists in a graph of
-  Resources
+Figure out how to generate nice resource names in the grapher phase
 
 Add a code-generation phase
 

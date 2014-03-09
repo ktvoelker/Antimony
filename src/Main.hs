@@ -7,6 +7,7 @@ import H.Common.IO
 
 import Checker
 import Derefer
+import Grapher
 import Evaluator
 import Lexer
 import Monad
@@ -23,6 +24,7 @@ phases =
   >=> derefPhase
   >=> checkPhase
   >=> evalPhase
+  >=> graphPhase
   >=> const (return ())
 
 main :: IO ()

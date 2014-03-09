@@ -8,8 +8,6 @@ import Prim.Eval
 import Syntax
 import Value
 
-type Heap = [(Ptr, [(Text, Val)])]
-
 data Env = Env
   { envBindings  :: [(Unique, Val)]
   , envNamespace :: [Unique]
@@ -58,7 +56,7 @@ evaluate ns = do
       v <- evalExpr expr
       when (uniqueSourceName (head ns) == "main" && uniqueSourceName u == "main") $
         case v of
-          VRec _ ptr -> modify $ \s -> s { envMain = Just ptr }
+          VRec ptr -> modify $ \s -> s { envMain = Just ptr }
           _ -> todo
       modify $ \s -> s { envBindings = (u, v) : envBindings s }
 
@@ -94,13 +92,13 @@ evalExpr (EApp fn args) =
       localBindings args' $ evalExpr body
     VPrim id -> evalPrim id <$> mapM evalExpr args
     _ -> impossible "Application of a non-function"
-evalExpr (ERec ty fs) = VRec ty <$> (f (unzip fs) >>= store)
+evalExpr (ERec ty fs) = VRec <$> (f (unzip fs) >>= store . Rec ty)
   where
     f (names, values) = zip (map uniqueSourceName names) <$> mapM evalExpr values
 
 lookupField :: Val -> Text -> EvalM Val
-lookupField (VRec _ ptr) f = do
-  ((lookup ptr >=> lookup f) <$> gets envRecords) >>= \case
+lookupField (VRec ptr) f = do
+  ((lookup ptr >=> lookup f . recBody) <$> gets envRecords) >>= \case
     Nothing -> impossible "Ptr or field lookup failed"
     Just val -> return val
 lookupField _ _ = impossible "Field lookup from a non-record"
