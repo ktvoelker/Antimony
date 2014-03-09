@@ -56,7 +56,7 @@ derefExpr e@(ELit _) = pure e
 derefExpr (EFun ps e) = EFun ps <$> derefExpr e
 derefExpr (ERef qual) = ERef <$> derefQual qual
 derefExpr (EApp fn as) = EApp <$> derefExpr fn <*> mapM derefExpr as
-derefExpr (ERec bs) = ERec <$> mapM (onSndF derefExpr) bs
+derefExpr (ERec ty bs) = ERec ty <$> mapM (onSndF derefExpr) bs
 derefExpr e@(EPrim _) = pure e
 
 derefQual :: Qual Unique -> DerM (Qual Unique)

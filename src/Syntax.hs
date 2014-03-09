@@ -43,7 +43,7 @@ data Expr a =
   | EFun  [a] (Expr a)
   | ERef  (Qual a)
   | EApp  (Expr a) [Expr a]
-  | ERec  [(a, (Expr a))]
+  | ERec  (Maybe PrimId) [(a, (Expr a))]
   | EPrim PrimId
   deriving (Eq, Ord, Show)
 

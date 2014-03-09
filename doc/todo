@@ -2,13 +2,14 @@
 TODO
 ====
 
-Take the conversion to Resources out of the evaluation phase
+Figure out where the type information disappears and preserve it for records
 
-  It should instead be an operation on the heap
+Add a new phase for generating Resources from the heap
 
-  But we need to know where in the heap to start
+  Remember, the Resource type only contains literals because it exists in a graph of
+  Resources
 
-    Look for a top-level symbol named "main" and start there
+Add a code-generation phase
 
 Add support for collections (lists, sets, and dictionaries, probably)
 
@@ -30,8 +31,6 @@ Fix default values in types - they are supposed to be able to refer to abstract
 members of the particular value the default is being used in
 
   Or just remove the feature for now
-
-Add a code-generation phase
 
 Figure out where to put code to check access rules
 

@@ -77,11 +77,12 @@ match (EApp (ERef (Qual u [])) args) ty = asks (lookup u) >>= \case
   Just (EnvValue _) -> err EType
 match (EApp (ERef _) _) _ = err EKind
 match (EApp _ _) _ = impossible "Application of a non-reference"
-match (ERec fs) (TRef (Qual u [])) = asks (lookup u) >>= \case
+match (ERec (Just _) _) _ = impossible "Record has type before checker"
+match (ERec Nothing fs) (TRef (Qual u [])) = asks (lookup u) >>= \case
   Nothing -> err EKind
   Just (EnvValue _) -> err EKind
   Just (EnvType ts) -> matchRec fs ts
-match (ERec _) _ = err EKind
+match (ERec _ _) _ = err EKind
 match (EPrim id) ty = case lookup id primOps of
   Nothing -> impossible "Invalid primitive identifier"
   Just ty' -> equate (liftPrimTypeUnique ty') ty

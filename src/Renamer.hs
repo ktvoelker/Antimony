@@ -46,7 +46,7 @@ renameScopeMap f bs = scopeForBindings (map fst bs) $ mapM f' bs
 renameExpr :: Expr Id -> RenM (Expr Unique)
 renameExpr (EFun ps b) =
   scopeForBindings ps $ EFun <$> mapM findInScope ps <*> renameExpr b
-renameExpr (ERec bs) = ERec <$> renameScopeMap renameExpr bs
+renameExpr (ERec ty bs) = ERec ty <$> renameScopeMap renameExpr bs
 renameExpr (ERef qual) = ERef <$> renameQual qual
 renameExpr (EApp fn args) = EApp <$> renameExpr fn <*> mapM renameExpr args
 renameExpr (ELit lit) = pure $ ELit lit

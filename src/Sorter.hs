@@ -54,7 +54,7 @@ sortQual :: Qual Unique -> SortM (Qual Unique)
 sortQual q@(Qual id _) = ask >>= lift . mapM_ (flip RG.addRefM id) >> pure q
 
 sortExpr :: Expr Unique -> SortM (Expr Unique)
-sortExpr (ERec bs) = ERec <$> sortScopeMap sortExpr bs
+sortExpr (ERec ty bs) = ERec ty <$> sortScopeMap sortExpr bs
 sortExpr (ERef qual) = ERef <$> sortQual qual
 sortExpr (EFun ps body) = EFun ps <$> sortExpr body
 sortExpr (EApp fn args) = EApp <$> sortExpr fn <*> mapM sortExpr args

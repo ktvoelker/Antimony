@@ -5,14 +5,17 @@ import H.Common
 
 import Monad
 import Prim.Eval
-import Resource
 import Syntax
 import Value
 
+type Heap = [(Ptr, [(Text, Val)])]
+
 data Env = Env
-  { envBindings :: [(Unique, Val)]
-  , envRecords  :: [(Ptr, [(Text, Val)])]
-  , envNextPtr  :: Ptr
+  { envBindings  :: [(Unique, Val)]
+  , envNamespace :: [Unique]
+  , envRecords   :: Heap
+  , envMain      :: Maybe Ptr
+  , envNextPtr   :: Ptr
   } deriving (Eq, Ord, Show)
 
 type EvalM = StateT Env M
@@ -30,23 +33,34 @@ nextPtr = do
   modify $ \s -> s { envNextPtr = Ptr (n + 1) }
   return ptr
 
-evalPhase :: Namespace Unique -> M [Resource]
-evalPhase ns = evalStateT (evaluate ns) $ Env [] [] (Ptr 1)
+evalPhase :: Namespace Unique -> M (Ptr, Heap)
+evalPhase ns = evalStateT (evaluate ns) $ Env [] [] [] Nothing (Ptr 1)
 
-evaluate :: Namespace Unique -> EvalM [Resource]
-evaluate ns = concat <$> mapM f ns
+evaluate :: Namespace Unique -> EvalM (Ptr, Heap)
+evaluate ns = do
+  e ns
+  (,) <$> (maybe todo id <$> gets envMain) <*> gets envRecords
   where
+    -- Evaluate an entire namespace
+    e ns = mapM_ f ns
+    -- Evaluate one binding in a namespace
     f (u, (_, d)) = case d of
-      DNamespace ds -> evaluate ds
-      DType fs -> concat <$> mapM g fs
+      DNamespace ds -> localNamespace u $ e ds
+      DType fs -> mapM_ g fs
       DVal be -> h u be
-      DPrim _ -> return mempty
+      DPrim _ -> return ()
+    -- Evaluate one binding in a type declaration
     g (u, (_, be)) = h u be
-    h _ (BoundExpr _ Nothing) = return mempty
+    -- Evaluate a bound expression
+    h _ (BoundExpr _ Nothing) = return ()
     h u (BoundExpr _ (Just expr)) = do
+      ns <- gets envNamespace
       v <- evalExpr expr
+      when (uniqueSourceName (head ns) == "main" && uniqueSourceName u == "main") $
+        case v of
+          VRec _ ptr -> modify $ \s -> s { envMain = Just ptr }
+          _ -> todo
       modify $ \s -> s { envBindings = (u, v) : envBindings s }
-      valueResources v
 
 getVal :: Unique -> EvalM Val
 getVal u =
@@ -61,6 +75,13 @@ localBindings inner m = do
   modify $ \s -> s { envBindings = outer }
   return ret
 
+localNamespace :: Unique -> EvalM a -> EvalM a
+localNamespace u m = do
+  modify $ \s -> s { envNamespace = u : envNamespace s }
+  ret <- m
+  modify $ \s -> s { envNamespace = tail $ envNamespace s }
+  return ret
+
 evalExpr :: Expr Unique -> EvalM Val
 evalExpr (ELit lit) = return $ VLit lit
 evalExpr (EFun ps body) = return $ VFun ps body
@@ -73,17 +94,14 @@ evalExpr (EApp fn args) =
       localBindings args' $ evalExpr body
     VPrim id -> evalPrim id <$> mapM evalExpr args
     _ -> impossible "Application of a non-function"
-evalExpr (ERec fs) = VRec <$> (f (unzip fs) >>= store)
+evalExpr (ERec ty fs) = VRec ty <$> (f (unzip fs) >>= store)
   where
     f (names, values) = zip (map uniqueSourceName names) <$> mapM evalExpr values
 
 lookupField :: Val -> Text -> EvalM Val
-lookupField (VRec ptr) f = do
+lookupField (VRec _ ptr) f = do
   ((lookup ptr >=> lookup f) <$> gets envRecords) >>= \case
     Nothing -> impossible "Ptr or field lookup failed"
     Just val -> return val
 lookupField _ _ = impossible "Field lookup from a non-record"
-
-valueResources :: Val -> EvalM [Resource]
-valueResources = todo
 

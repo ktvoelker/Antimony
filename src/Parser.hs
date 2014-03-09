@@ -145,7 +145,7 @@ exprRef = f <$> qual <*> optional fnArgs
     f q (Just args) = EApp (ERef q) args
 
 exprRec :: AParser (Expr Id)
-exprRec = label "rec" $ ERec <$> recBody
+exprRec = label "rec" $ ERec Nothing <$> recBody
 
 recBody :: AParser [(Id, (Expr Id))]
 recBody = delimit "{" "}" . many $ recBind

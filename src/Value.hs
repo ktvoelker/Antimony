@@ -10,7 +10,7 @@ newtype Ptr = Ptr Integer deriving (Eq, Ord, Show)
 type Rec = [(Text, Val)]
 
 data Val =
-    VRec Ptr
+    VRec (Maybe PrimId) Ptr
   | VLit Lit
   | VFun [Unique] (Expr Unique)
   | VPrim PrimId
