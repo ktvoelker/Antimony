@@ -2,8 +2,6 @@
 TODO
 ====
 
-Figure out where the type information disappears and preserve it for records
-
 Add a new phase for generating Resources from the heap
 
   Remember, the Resource type only contains literals because it exists in a graph of

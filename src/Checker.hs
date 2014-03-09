@@ -44,7 +44,7 @@ checkDecl d@(DPrim _) = return d
 
 checkBoundExpr :: BoundExpr Unique -> ChkM (BoundExpr Unique)
 checkBoundExpr be@(BoundExpr _ Nothing) = return be
-checkBoundExpr be@(BoundExpr ty (Just e)) = match e ty >> return be
+checkBoundExpr (BoundExpr ty (Just e)) = BoundExpr ty . Just <$> match e ty
 
 err :: AErrType -> ChkM ()
 err e = report $ Err (ECustom e) Nothing Nothing Nothing
@@ -52,45 +52,51 @@ err e = report $ Err (ECustom e) Nothing Nothing Nothing
 equate :: (Eq a) => a -> a -> ChkM ()
 equate a b = when (a /= b) $ err EType
 
-match :: Expr Unique -> Type Unique -> ChkM ()
-match (ELit lit) (TRef (Qual u []))
-  | litMatchesPrim lit u = return ()
-  | otherwise = err EType
-match (ELit _) _ = err EKind
+match :: Expr Unique -> Type Unique -> ChkM (Expr Unique)
+match e@(ELit lit) (TRef (Qual u []))
+  | litMatchesPrim lit u = return e
+  | otherwise = err EType >> return e
+match e@(ELit _) _ = err EKind >> return e
 match (EFun ps body) (TFun pTys bodyTy) =
   equate (length ps) (length pTys)
-  >> match body bodyTy
-match (EFun _ _) (TRef _) = err EKind
-match (ERef (Qual u [])) ty = asks (lookup u) >>= \case
-  Nothing -> err EKind
-  Just (EnvType _) -> err EKind
-  Just (EnvValue refTy) -> equate refTy ty
-match (ERef _) _ = err EKind
+  >> (EFun ps <$> match body bodyTy)
+match e@(EFun _ _) (TRef _) = err EKind >> return e
+match e@(ERef (Qual u [])) ty = asks (lookup u) >>= \case
+  Nothing -> err EKind >> return e
+  Just (EnvType _) -> err EKind >> return e
+  Just (EnvValue refTy) -> equate refTy ty >> return e
+match e@(ERef _) _ = err EKind >> return e
 match (EApp (EPrim id) args) ty = match (EApp (primRef id) args) ty
-match (EApp (ERef (Qual u [])) args) ty = asks (lookup u) >>= \case
-  Nothing -> err EKind
-  Just (EnvType _) -> err EKind
+match e@(EApp r@(ERef (Qual u [])) args) ty = asks (lookup u) >>= \case
+  Nothing -> err EKind >> return e
+  Just (EnvType _) -> err EKind >> return e
   Just (EnvValue (TFun pTys bodyTy)) ->
     equate (length args) (length pTys)
-    >> mapM (uncurry match) (zip args pTys)
     >> equate bodyTy ty
-  Just (EnvValue _) -> err EType
-match (EApp (ERef _) _) _ = err EKind
+    >> (EApp r <$> mapM (uncurry match) (zip args pTys))
+  Just (EnvValue _) -> err EType >> return e
+match e@(EApp (ERef _) _) _ = err EKind >> return e
 match (EApp _ _) _ = impossible "Application of a non-reference"
 match (ERec (Just _) _) _ = impossible "Record has type before checker"
-match (ERec Nothing fs) (TRef (Qual u [])) = asks (lookup u) >>= \case
-  Nothing -> err EKind
-  Just (EnvValue _) -> err EKind
-  Just (EnvType ts) -> matchRec fs ts
-match (ERec _ _) _ = err EKind
-match (EPrim id) ty = case lookup id primOps of
+match e@(ERec Nothing fs) (TRef (Qual u [])) = asks (lookup u) >>= \case
+  Nothing -> err EKind >> return e
+  Just (EnvValue _) -> err EKind >> return e
+  Just (EnvType ts) -> ERec (uniquePrim u) <$> matchRec fs ts
+match e@(ERec _ _) _ = err EKind >> return e
+match e@(EPrim id) ty = case lookup id primOps of
   Nothing -> impossible "Invalid primitive identifier"
-  Just ty' -> equate (liftPrimTypeUnique ty') ty
+  Just ty' -> equate (liftPrimTypeUnique ty') ty >> return e
 
-matchRec :: [(Unique, Expr Unique)] -> [(Text, Type Unique)] -> ChkM ()
-matchRec fs ts = equate fNames tNames >> mapM_ (uncurry match) (zip fExprs tTypes)
+matchRec
+  :: [(Unique, Expr Unique)]
+  -> [(Text, Type Unique)]
+  -> ChkM [(Unique, Expr Unique)]
+matchRec fs ts =
+  equate fNames tNames
+  >> mapM (\((n, e), t) -> (n,) <$> match e t) (zip fValues tTypes)
   where
-    s = unzip . sortBy (compare `on` fst)
-    (fNames, fExprs) = s . map (onFst uniqueSourceName) $ fs
-    (tNames, tTypes) = s ts
+    s xs = sortBy (compare `on` fst) xs
+    fValues = s fs
+    fNames = map (uniqueSourceName . fst) fValues
+    (tNames, tTypes) = unzip . s $ ts
 
