@@ -1,11 +1,12 @@
 
-module Parser where
+module Parser (parsePhase, bnf) where
 
 import Data.String
 import qualified Data.Text as T
 import H.Common
 import H.Parser
 import Text.Parsec.Applicative hiding (Parser, parse)
+import Text.Parsec.Applicative.BNF
 
 import Lexer
 import Monad
@@ -40,7 +41,12 @@ userIdent :: AParser Id
 userIdent = label "user-ident" $ Id <$> identifier AIdUser
 
 file :: AParser (Namespace Id)
-file = label "file" $ (: []) <$> withAccess fileNamespace
+file = label "file" $ (: []) <$> withAccess fileNamespace <* eof
+
+bnf :: BNF
+bnf = case parserToBNF file of
+  Nothing  -> impossible "Failed to convert parser to BNF"
+  Just bnf -> bnf
 
 namespace
   :: AParser Id

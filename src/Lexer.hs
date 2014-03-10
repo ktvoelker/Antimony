@@ -30,8 +30,10 @@ idChars = idPrefixChars <> digits
 aLexerSpec :: LexerSpec AIdClass
 aLexerSpec =
   LexerSpec
-  { sKeywords
-    = ["ns", "public", "extern", ",", ";", "::", "{", "}", "(", ")", ".", "="]
+  { sKeywords =
+    [ "ns", "public", "extern", "type"
+    , ",", ";", "::", "{", "}", "(", ")", ".", "="
+    ]
   , sIdentifiers =
     [ (AIdPrim, primPrefixChars, idChars)
     , (AIdUser, idPrefixChars, idChars)

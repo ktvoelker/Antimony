@@ -1,0 +1,11 @@
+
+ns main;
+
+type foo {
+  x :: #int;
+}
+
+main :: foo = {
+  x = 3;
+};
+

@@ -2,9 +2,9 @@
 TODO
 ====
 
-Figure out how to generate nice resource names in the grapher phase
-
 Add a code-generation phase
+
+Figure out how to generate nice resource names in the grapher phase
 
 Add support for collections (lists, sets, and dictionaries, probably)
 

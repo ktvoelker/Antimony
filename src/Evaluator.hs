@@ -37,7 +37,7 @@ evalPhase ns = evalStateT (evaluate ns) $ Env [] [] [] Nothing (Ptr 1)
 evaluate :: Namespace Unique -> EvalM (Ptr, Heap)
 evaluate ns = do
   e ns
-  (,) <$> (maybe todo id <$> gets envMain) <*> gets envRecords
+  (,) <$> (maybe (error "missing main.main") id <$> gets envMain) <*> gets envRecords
   where
     -- Evaluate an entire namespace
     e ns = mapM_ f ns
@@ -54,10 +54,12 @@ evaluate ns = do
     h u (BoundExpr _ (Just expr)) = do
       ns <- gets envNamespace
       v <- evalExpr expr
-      when (uniqueSourceName (head ns) == "main" && uniqueSourceName u == "main") $
+      let inMainModule = map uniqueSourceName (take 1 ns) == ["main"]
+      let inMainFunction = uniqueSourceName u == "main"
+      when (inMainModule && inMainFunction) $
         case v of
           VRec ptr -> modify $ \s -> s { envMain = Just ptr }
-          _ -> todo
+          _ -> error "main.main is not a record"
       modify $ \s -> s { envBindings = (u, v) : envBindings s }
 
 getVal :: Unique -> EvalM Val

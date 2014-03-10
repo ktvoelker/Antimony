@@ -7,6 +7,7 @@ import H.Common
 
 import Monad
 import Resource
+import Syntax
 import Value
 
 type HeapGraph = M.Map Ptr (Resource, Ptr, [Ptr])
@@ -40,7 +41,7 @@ heapGraph heap = f
           VPrim _  -> Right Nothing
         res =
           Resource
-          { _rName  = todo
+          { _rName  = Qual "todo" []
           , _rType  = recType
           , _rAttrs = M.fromList . catMaybes $ attrs
           }

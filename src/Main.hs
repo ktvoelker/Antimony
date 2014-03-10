@@ -7,13 +7,16 @@ import H.Common.IO
 
 import Checker
 import Derefer
-import Grapher
 import Evaluator
+import Grapher
 import Lexer
 import Monad
 import Parser
 import Renamer
 import Sorter
+
+dump :: (Show a) => a -> M a
+dump x = liftIO (print x) >> return x
 
 phases :: FileMap Text -> M ()
 phases =
@@ -28,5 +31,9 @@ phases =
   >=> const (return ())
 
 main :: IO ()
-main = runMT $ liftIO ((map fromString <$> getArgs) >>= readFiles) >>= phases
+main = do
+  args <- getArgs
+  case args of
+    [] -> print bnf
+    xs -> runMT $ (liftIO . readFiles . map fromString $ xs) >>= phases
 
