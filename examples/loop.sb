@@ -1,7 +1,0 @@
-
-ns loop;
-
-x :: #str = y;
-
-y :: #str = x;
-

@@ -1,7 +1,0 @@
-
-ns sort;
-
-x :: #str = y;
-
-y :: #str = "foo";
-
