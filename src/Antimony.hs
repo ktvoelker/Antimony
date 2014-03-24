@@ -1,56 +1,49 @@
 
 module Antimony where
 
+import Control.Monad
+import Control.Monad.Reader
+import Control.Monad.State
 import qualified Data.Map as M
-import Data.Text (Text)
+import System.Environment (getArgs)
 
-data Role = RoleOwner | RoleGroup | RoleOther
-  deriving (Eq, Ord, Enum, Bounded, Show)
+import Antimony.Types
 
-data Permissions =
-  Permissions
-  { canRead    :: Bool
-  , canWrite   :: Bool
-  , canExecute :: Bool
-  } deriving (Eq, Ord, Bounded, Show)
+todo :: a
+todo = error "Not implemented"
 
-data FileState =
-  FileState
-  { fileOwner   :: Text
-  , fileMode    :: [(Role, Permissions)]
-  , fileContent :: Text
-  } deriving (Eq, Ord, Show)
+inferEnv :: Target -> IO Env
+inferEnv = todo
 
-newtype Version = Version [Integer]
-  deriving (Eq, Ord, Show)
-
-type VersionConstraint = (Ordering, Version)
-
-data Primitive =
-    File Text FileState
-  | Package Text (Maybe VersionConstraint)
-  | Service Text Bool
-  | Group
-  deriving (Eq, Ord, Show)
-
-newtype Resource = Resource Text
-  deriving (Eq, Ord, Show)
-
-data Env tag =
-  Env
-  { envKernel    :: (Text, Version)
-  , envDistro    :: (Text, Version)
-  , envTarget    :: Text
-  , envTags      :: [tag]
-  } deriving (Eq, Ord, Show)
-
-data S =
+emptyS :: S
+emptyS =
   S
-  { sResources :: M.Map Resource (Primitive, [Resource])
-  } deriving (Eq, Ord, Show)
-
-newtype AntimonyM tag a =
-  AntimonyM
-  { runAntimony :: StateT S (ReaderT (Env tag) IO) a
+  { sResources = M.empty
   }
+
+main :: AntimonyM () -> IO ()
+main m = getArgs >>= runWithArgs m
+
+argToTarget :: String -> Target
+argToTarget = todo
+
+planWithEnv :: AntimonyM () -> Env -> IO Plan
+planWithEnv m env =
+  liftM (Plan (envTarget env) . sResources)
+  . runLogM
+  . flip execStateT emptyS
+  . flip runReaderT env
+  $ runAntimony m
+
+runPlan :: Plan -> IO ()
+runPlan = todo
+
+runWithArgs :: AntimonyM () -> [String] -> IO ()
+runWithArgs m =
+  -- TODO infer in parallel
+  mapM (inferEnv . argToTarget)
+  -- TODO plan in parallel
+  >=> mapM (planWithEnv m)
+  -- TODO run plans in parallel
+  >=> mapM_ runPlan
 
