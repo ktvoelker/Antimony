@@ -5,15 +5,18 @@ import Control.Monad
 import Control.Monad.Reader
 import Control.Monad.State
 import qualified Data.Map as M
+import qualified Data.Text as T
 import System.Environment (getArgs)
 
+import Antimony.Session
 import Antimony.Types
 
 todo :: a
 todo = error "Not implemented"
 
 inferEnv :: Target -> IO Env
-inferEnv = todo
+inferEnv t = withSession t $ \s -> do
+  todo
 
 emptyS :: S
 emptyS =
@@ -25,7 +28,13 @@ main :: AntimonyM () -> IO ()
 main m = getArgs >>= runWithArgs m
 
 argToTarget :: String -> Target
-argToTarget = todo
+argToTarget "localhost" = TargetLocal
+argToTarget xs = TargetSSH (T.pack host) port
+  where
+    (host, portString) = break (== ':') xs
+    port = case portString of
+      "" -> Nothing
+      xs -> Just $ read xs
 
 planWithEnv :: AntimonyM () -> Env -> IO Plan
 planWithEnv m env =

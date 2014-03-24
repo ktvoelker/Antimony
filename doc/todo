@@ -2,12 +2,12 @@
 TODO
 ====
 
+Implement environment inference
+  Get the tags from a local configuration file (ini)
+
 Add helper functions to add resources and dependencies
 
 Implement plan execution
-
-Implement environment inference
-  Get the tags from a local configuration file (ini)
 
 Set the public export interface and document it
 
