@@ -2,6 +2,8 @@
 TODO
 ====
 
+Use Hydrogen
+
 Finish environment inference
   Get the tags from a local configuration file (ini)
 

@@ -1,31 +1,25 @@
-name:                antimony
+name:                antimony-tools
 version:             0.0.0.1
-synopsis:            Antimony
+synopsis:            Antimony tools
 description:         TODO
 license:             GPL-3
-license-file:        LICENSE
+license-file:        ../LICENSE
 author:              Karl Voelker
-maintainer:          antimony@karlv.net
+maintainer:          antimony-tools@karlv.net
 copyright:           (c) 2014 Karl Voelker
 category:            System
 build-type:          Simple
 cabal-version:       >=1.10
 
-library
-  exposed-modules: Antimony
-  other-modules:
-    Antimony.Session
-    Antimony.Types
+executable antimony-infer-env
+  hs-source-dirs: infer-env
+  main-is: Main.hs
   default-extensions:
     OverloadedStrings
   -- other-extensions:
   build-depends:
     base       >= 4.6  && < 4.7,
-    text       >= 0.11 && < 0.12,
-    containers >= 0.5  && < 0.6,
-    mtl        >= 2.1  && < 2.2,
-    process    >= 1.1  && < 1.2
-  hs-source-dirs:      src
+    antimony
   default-language:    Haskell2010
   ghc-options:
     -Wall

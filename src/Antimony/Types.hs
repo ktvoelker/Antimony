@@ -46,10 +46,14 @@ data Target =
   | TargetSSH Text (Maybe Integer)
   deriving (Eq, Ord, Show)
 
+data Kernel = Linux | Darwin deriving (Eq, Ord, Enum, Bounded, Show)
+
+data Distro = Ubuntu | OSX deriving (Eq, Ord, Enum, Bounded, Show)
+
 data Env =
   Env
-  { envKernel    :: (Text, Version)
-  , envDistro    :: (Text, Version)
+  { envKernel    :: (Kernel, Version)
+  , envDistro    :: (Distro, Version)
   , envTarget    :: Target
   , envTags      :: [Text]
   } deriving (Eq, Ord, Show)

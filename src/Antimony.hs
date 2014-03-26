@@ -5,6 +5,7 @@ import Control.Monad
 import Control.Monad.Reader
 import Control.Monad.State
 import Data.Char
+import Data.Functor
 import qualified Data.Map as M
 import qualified Data.Text as T
 import System.Environment (getArgs)
@@ -22,32 +23,37 @@ parseVersion xs =
     parts = T.splitOn "." xs
     (intParts, otherParts) = span (T.all isDigit) parts
 
-parseLinuxDistro :: T.Text -> T.Text -> (T.Text, Version)
-parseLinuxDistro osVersion motd = todo
+parseLinuxDistro :: T.Text -> T.Text -> (Distro, Version)
+parseLinuxDistro _ motd =
+  case take 1 . drop 1 . dropWhile (/= "Ubuntu") . T.words $ motd of
+    [version] -> (Ubuntu, parseVersion version)
+    _ -> error "Unknown Linux distro"
 
 inferEnv :: Target -> IO Env
 inferEnv t = do
-  machineName <- runOnTarget t "uname" ["-m"]
-  cpuArch <- runOnTarget t "uname" ["-p"]
-  osRelease <- runOnTarget t "uname" ["-r"]
-  osName <- runOnTarget t "uname" ["-s"]
-  osVersion <- runOnTarget t "uname" ["-v"]
-  motd <- runOnTarget t "head" ["-n", "1", "/etc/motd"]
+  osRelease <- r t "uname" ["-r"]
+  osName    <- r t "uname" ["-s"]
+  osVersion <- r t "uname" ["-v"]
+  motd      <- r t "head" ["-n", "1", "/etc/motd"]
   return $ case osName of
     "Darwin" ->
       Env
-      { envKernel = (osName, parseVersion osRelease)
-      , envDistro = ("MacOS X", parseVersion osRelease)
+      { envKernel = (Darwin, parseVersion osRelease)
+      , envDistro = (OSX, parseVersion osRelease)
       , envTarget = t
-      , envTags   = todo
+      , envTags   = [] -- TODO
       }
     "Linux" ->
       Env
-      { envKernel = (osName, parseVersion osRelease)
+      { envKernel = (Linux, parseVersion osRelease)
       , envDistro = parseLinuxDistro osVersion motd
       , envTarget = t
-      , envTags   = todo
+      , envTags   = [] -- TODO
       }
+    _ -> error $ "Unknown OS name: " ++ T.unpack osName
+  where
+    r t bin args = f <$> runOnTarget t bin args
+    f (_, out, _) = T.strip out
 
 emptyS :: S
 emptyS =
@@ -78,10 +84,13 @@ planWithEnv m env =
 runPlan :: Plan -> IO ()
 runPlan = todo
 
+argToEnv :: String -> IO Env
+argToEnv = inferEnv . argToTarget
+
 runWithArgs :: AntimonyM () -> [String] -> IO ()
 runWithArgs m =
   -- TODO infer in parallel
-  mapM (inferEnv . argToTarget)
+  mapM argToEnv
   -- TODO plan in parallel
   >=> mapM (planWithEnv m)
   -- TODO run plans in parallel
