@@ -15,7 +15,8 @@ library
   exposed-modules: Antimony
   other-modules:
     Antimony.Types
-  -- default-extensions:
+  default-extensions:
+    OverloadedStrings
   -- other-extensions:
   build-depends:
     base       >= 4.6  && < 4.7,

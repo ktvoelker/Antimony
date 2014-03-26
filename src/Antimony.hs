@@ -4,6 +4,7 @@ module Antimony where
 import Control.Monad
 import Control.Monad.Reader
 import Control.Monad.State
+import Data.Char
 import qualified Data.Map as M
 import qualified Data.Text as T
 import System.Environment (getArgs)
@@ -14,9 +15,39 @@ import Antimony.Types
 todo :: a
 todo = error "Not implemented"
 
+parseVersion :: T.Text -> Version
+parseVersion xs =
+  Version (map (read . T.unpack) intParts) (T.intercalate "." otherParts)
+  where
+    parts = T.splitOn "." xs
+    (intParts, otherParts) = span (T.all isDigit) parts
+
+parseLinuxDistro :: T.Text -> T.Text -> (T.Text, Version)
+parseLinuxDistro osVersion motd = todo
+
 inferEnv :: Target -> IO Env
-inferEnv t = withSession t $ \s -> do
-  todo
+inferEnv t = do
+  machineName <- runOnTarget t "uname" ["-m"]
+  cpuArch <- runOnTarget t "uname" ["-p"]
+  osRelease <- runOnTarget t "uname" ["-r"]
+  osName <- runOnTarget t "uname" ["-s"]
+  osVersion <- runOnTarget t "uname" ["-v"]
+  motd <- runOnTarget t "head" ["-n", "1", "/etc/motd"]
+  return $ case osName of
+    "Darwin" ->
+      Env
+      { envKernel = (osName, parseVersion osRelease)
+      , envDistro = ("MacOS X", parseVersion osRelease)
+      , envTarget = t
+      , envTags   = todo
+      }
+    "Linux" ->
+      Env
+      { envKernel = (osName, parseVersion osRelease)
+      , envDistro = parseLinuxDistro osVersion motd
+      , envTarget = t
+      , envTags   = todo
+      }
 
 emptyS :: S
 emptyS =

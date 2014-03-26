@@ -26,7 +26,7 @@ data FileState =
   , fileContent :: Text
   } deriving (Eq, Ord, Show)
 
-newtype Version = Version [Integer]
+data Version = Version [Integer] Text
   deriving (Eq, Ord, Show)
 
 type VersionConstraint = (Ordering, Version)
