@@ -1,12 +1,10 @@
 
 module Antimony.Types where
 
-import Prelude hiding (log)
+import H.Common
 
-import Control.Monad.Reader
-import Control.Monad.State
 import qualified Data.Map as M
-import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 
 data Role = RoleOwner | RoleGroup | RoleOther
@@ -21,29 +19,29 @@ data Permissions =
 
 data FileState =
   FileState
-  { fileOwner   :: Text
+  { fileOwner   :: T.Text
   , fileMode    :: [(Role, Permissions)]
-  , fileContent :: Text
+  , fileContent :: T.Text
   } deriving (Eq, Ord, Show)
 
-data Version = Version [Integer] Text
+data Version = Version [Integer] T.Text
   deriving (Eq, Ord, Show)
 
 type VersionConstraint = (Ordering, Version)
 
 data Primitive =
-    File Text FileState
-  | Package Text (Maybe VersionConstraint)
-  | Service Text Bool
+    File T.Text FileState
+  | Package T.Text (Maybe VersionConstraint)
+  | Service T.Text Bool
   | Group
   deriving (Eq, Ord, Show)
 
-newtype Resource = Resource Text
+newtype Resource = Resource T.Text
   deriving (Eq, Ord, Show)
 
 data Target =
     TargetLocal
-  | TargetSSH Text (Maybe Integer)
+  | TargetSSH T.Text (Maybe Integer)
   deriving (Eq, Ord, Show)
 
 data Kernel = Linux | Darwin deriving (Eq, Ord, Enum, Bounded, Show)
@@ -55,7 +53,7 @@ data Env =
   { envKernel    :: (Kernel, Version)
   , envDistro    :: (Distro, Version)
   , envTarget    :: Target
-  , envTags      :: [Text]
+  , envTags      :: [T.Text]
   } deriving (Eq, Ord, Show)
 
 type ResourceMap = M.Map Resource (Primitive, [Resource])
@@ -76,7 +74,7 @@ instance Monad LogM where
   fail = LogM . fail
 
 class MonadLog m where
-  say :: Text -> m ()
+  say :: T.Text -> m ()
   log :: (Show a) => a -> m ()
 
 instance MonadLog IO where

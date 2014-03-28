@@ -1,20 +1,19 @@
 
 module Antimony where
 
-import Control.Monad
-import Control.Monad.Reader
-import Control.Monad.State
-import Data.Char
-import Data.Functor
+import H.Common
+import H.Common.IO
+
 import qualified Data.Map as M
 import qualified Data.Text as T
-import System.Environment (getArgs)
 
 import Antimony.Session
 import Antimony.Types
 
-todo :: a
-todo = error "Not implemented"
+readText :: (Read a) => T.Text -> Maybe a
+readText xs = case reads . T.unpack $ xs of
+  [(result, "")] -> Just result
+  _ -> Nothing
 
 parseVersion :: T.Text -> Version
 parseVersion xs =
@@ -62,16 +61,16 @@ emptyS =
   }
 
 main :: AntimonyM () -> IO ()
-main m = getArgs >>= runWithArgs m
+main m = getArgs >>= runWithArgs m . map T.pack
 
-argToTarget :: String -> Target
+argToTarget :: T.Text -> Target
 argToTarget "localhost" = TargetLocal
-argToTarget xs = TargetSSH (T.pack host) port
+argToTarget xs = TargetSSH host port
   where
-    (host, portString) = break (== ':') xs
-    port = case portString of
+    (host, portText) = T.break (== ':') xs
+    port = case portText of
       "" -> Nothing
-      xs -> Just $ read xs
+      xs -> maybe todo Just $ readText xs
 
 planWithEnv :: AntimonyM () -> Env -> IO Plan
 planWithEnv m env =
@@ -84,10 +83,10 @@ planWithEnv m env =
 runPlan :: Plan -> IO ()
 runPlan = todo
 
-argToEnv :: String -> IO Env
+argToEnv :: T.Text -> IO Env
 argToEnv = inferEnv . argToTarget
 
-runWithArgs :: AntimonyM () -> [String] -> IO ()
+runWithArgs :: AntimonyM () -> [T.Text] -> IO ()
 runWithArgs m =
   -- TODO infer in parallel
   mapM argToEnv

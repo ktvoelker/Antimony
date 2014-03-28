@@ -1,7 +1,8 @@
 
 module Antimony.Session where
 
-import Data.Functor
+import H.Common hiding (ExitCode)
+
 import qualified Data.Text as T
 import System.Exit
 import System.Process
