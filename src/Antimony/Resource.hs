@@ -1,0 +1,3 @@
+
+module Antimony.Resource where
+

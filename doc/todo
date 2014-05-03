@@ -2,12 +2,11 @@
 TODO
 ====
 
-Finish environment inference
-  Get the tags from a local configuration file (ini)
+Write the new Hydrogen and use it
 
-Add helper functions to add resources and dependencies
+Implement Antimony.main
 
-Implement plan execution
-
-Set the public export interface and document it
+  Basically, it just needs to do a depth-first search from the root resource,
+  expanding everything in its path, and turning those things into JSON descriptions
+  to be handled by a Python program
 
