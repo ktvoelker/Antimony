@@ -1,8 +1,6 @@
 
 module Antimony.Env where
 
-import qualified Data.Text as T
-
 import Antimony.Types
 
 data Kernel = Linux | Darwin deriving (Eq, Ord, Enum, Bounded, Show)
@@ -13,6 +11,9 @@ data Env =
   Env
   { envKernel    :: (Kernel, Version)
   , envDistro    :: (Distro, Version)
-  , envTags      :: [T.Text]
+  , envTags      :: [Text]
   } deriving (Eq, Ord, Show)
+
+ubuntuT :: Env
+ubuntuT = Env (Linux, Version [3, 13] "") (Ubuntu, Version [14, 4] "") []
 

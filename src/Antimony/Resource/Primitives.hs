@@ -1,8 +1,7 @@
 
 module Antimony.Resource.Primitives where
 
-import qualified Data.Text as T
-import Data.Typeable
+import H.Generic
 
 import Antimony.Resource.Core
 import Antimony.Types
@@ -19,24 +18,24 @@ data Permissions =
 
 data FileState =
   FileState
-  { fileOwner   :: T.Text
+  { fileOwner   :: Text
   , fileMode    :: [(Role, Permissions)]
   } deriving (Eq, Ord, Show, Typeable)
 
 data Directory =
   RootDirectory
-  | Directory T.Text FileState
+  | Directory Text FileState
   deriving (Eq, Ord, Show, Typeable)
 
-data File = File Directory T.Text FileState T.Text
+data File = File Directory Text FileState Text
   deriving (Eq, Ord, Show, Typeable)
 
-data Package = Package T.Text (Maybe VersionConstraint)
+data Package = Package Text (Maybe VersionConstraint)
   deriving (Eq, Ord, Show, Typeable)
 
-data Service = Service T.Text Bool
+data Service = Service Text Bool
   deriving (Eq, Ord, Show, Typeable)
 
-data Group = Group T.Text [Resource]
+data Group = Group Text [Resource]
   deriving (Eq, Ord, Show, Typeable)
 

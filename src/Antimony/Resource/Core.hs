@@ -1,15 +1,14 @@
 
 module Antimony.Resource.Core where
 
-import Data.Monoid
-import qualified Data.Text as T
-import Data.Typeable
+import H.Generic
+import H.StringMethods
 import Text.JSON
 
 class (Eq a, Ord a, Show a, Typeable a) => Primitive a where
   depends  :: a -> [Resource]
   describe :: a -> JSObject JSValue
-  identify :: a -> T.Text
+  identify :: a -> Text
 
 data Resource = forall a. (Primitive a) => Resource a [Resource]
 
@@ -28,9 +27,9 @@ instance Ord Resource where
 
 instance Show Resource where
   showsPrec prec (Resource a as) =
-    ("(Resource " ++)
+    ("(Resource " <>)
     . showsPrec prec a
-    . (" " ++)
+    . (" " <>)
     . showsPrec prec as
-    . (")" ++)
+    . (")" <>)
 

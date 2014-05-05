@@ -2,11 +2,9 @@
 TODO
 ====
 
-Write the new Hydrogen and use it
+Implement flatten
 
-Implement Antimony.main
+Implement friendly helpers for defining resources
 
-  Basically, it just needs to do a depth-first search from the root resource,
-  expanding everything in its path, and turning those things into JSON descriptions
-  to be handled by a Python program
+Process command-line arguments to determine the Env
 

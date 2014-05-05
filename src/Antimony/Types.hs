@@ -1,10 +1,9 @@
 
 module Antimony.Types where
 
-import qualified Data.Text as T
-import Data.Typeable
+import H.Generic
 
-data Version = Version [Integer] T.Text
+data Version = Version [Integer] Text
   deriving (Eq, Ord, Show, Typeable)
 
 type VersionConstraint = (Ordering, Version)

@@ -15,6 +15,7 @@ library
   exposed-modules:
     Antimony
     Antimony.Env
+    Antimony.Monad
     Antimony.Resource
     Antimony.Resource.Core
     Antimony.Resource.Primitives
@@ -25,11 +26,11 @@ library
     DeriveDataTypeable
     StandaloneDeriving
     ExistentialQuantification
+    GeneralizedNewtypeDeriving
+    TupleSections
   build-depends:
-    base,
-    text,
+    hydrogen >= 0.1,
     containers,
-    mtl,
     process,
     json
   hs-source-dirs:      src
