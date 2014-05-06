@@ -2,8 +2,6 @@
 TODO
 ====
 
-Implement flatten
-
 Implement friendly helpers for defining resources
 
 Process command-line arguments to determine the Env

@@ -11,6 +11,12 @@ class (Eq a, Ord a, Show a, Typeable a) => Primitive a where
   identify :: a -> Text
 
 data Resource = forall a. (Primitive a) => Resource a [Resource]
+  deriving (Typeable)
+
+instance Primitive Resource where
+  depends (Resource prim rs) = depends prim <> rs
+  describe (Resource prim _) = describe prim
+  identify (Resource prim _) = identify prim
 
 is :: Resource -> Resource -> Bool
 is (Resource a _) (Resource b _) = typeOf a == typeOf b && identify a == identify b

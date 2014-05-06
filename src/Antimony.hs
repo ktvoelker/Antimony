@@ -1,6 +1,7 @@
 
 module Antimony where
 
+import qualified Data.Set as S
 import H.IO
 import Text.JSON
 
@@ -9,7 +10,14 @@ import Antimony.Monad
 import Antimony.Resource.Core
 
 flatten :: Sb Resource -> Sb (ListBuilder (JSObject JSValue))
-flatten = todo
+flatten = fmap $ \res -> fst $ execState (go res) mempty
+  where
+    go :: Resource -> State (ListBuilder (JSObject JSValue), S.Set Resource) ()
+    go res = whenM (gets $ not . S.member res . snd) $ do
+      modify $ (<> (mempty, S.singleton res))
+      mapM_ go (depends res)
+      modify $ (<> (buildElem $ describe res, mempty))
+      return ()
 
 runEnv :: Env -> Sb Resource -> Either Err JSValue
 runEnv env = flatten >>> runSb env >>> fmap (finishList >>> fmap JSObject >>> JSArray)
